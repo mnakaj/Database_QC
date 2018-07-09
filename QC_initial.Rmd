@@ -1,0 +1,441 @@
+---
+title: "Quality Control"
+author: "Mia Nakajima"
+date: "6/12/2018"
+output: 
+  html_document:
+    keep_md: true
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(plyr)
+library(kernlab)
+library(dplyr)
+library(RJSONIO)
+library(XML)
+```
+
+
+
+```{r}
+#without citations
+database2 <- read.csv("~/Documents/try10.csv", sep = ",", header = TRUE, stringsAsFactors = FALSE)
+id <- seq(from = 1, to = length(database2[[1]]), by = 1)
+database2 <- data.frame(id, database2)
+```
+
+
+
+```{r}
+## Rows to divide database by
+#1 - 9290
+#9291 - 20999
+#21000 - 27024 
+#27025 - 61717
+#61718 - 65184
+#65185 - 78347
+test <- database2[1:74,]
+data1 <- database2[1:500, ]
+data2 <- database2[9291:20999,]
+data3 <- database2[21000:27024,]
+data4 <- database2[27025:61717,]
+data5 <- database2[61718:65184,]
+data6 <- database2[65185:78347,]
+```
+```{r}
+head(test)
+```
+
+# Basic Identifiers 
+
+## Publication (Citation)
+
+Skip for now.
+
+## Data contributor 
+
+```{r}
+scrap <- test$Data.contributor
+#scrap <- c("c12", "Jessica")
+if (sum(grepl("[[:digit:]]", scrap)) > 0){
+  print("There seems to be a name with a possible typo. Please check and then proceed.")
+}
+```
+
+## Year
+
+```{r}
+
+#check for any characters other than numbers
+
+#quick check 
+#test$Year <- c(rep("10", 72), "199c", "19999")
+year_vec <- grepl("[^0-9]", test$Year)
+
+if (length(which(year_vec)) > 0){
+  print("There seems to be a year with a non-numeric character. Please check and then proceed.")
+  
+  print(test[which(year_vec), c(1,2, 3)])
+}
+
+
+#check that there are only 4 digits
+
+num_year <- nchar(gsub(" ", "", test$Year))
+
+if (length(num_year[num_year != 4]) > 0){
+  print("There seems to be a date that is not formatted correctly. Please check and then proceed.")
+  
+   print(test[which(ifelse(num_year !=4, TRUE, FALSE)), c(1,2, 3)])
+} else {
+  print("looks good!")
+}
+
+
+
+
+```
+
+
+
+## Season
+
+Note: Do we want this to be case-sensitive? 
+```{r}
+#test
+#test$Season <- c(rep("spring", 11706), "Summer", "Autumn", "Dry")
+
+seasons <- factor(test$Season, levels = c("Spring", "Summer", "Autumn", "Winter", "Dry", "Humid"))
+
+if (length(which(is.na(seasons))) > 0){
+  print("Please check that season is correct before preceeding.")
+  print(test[which(is.na(seasons)), c(1, 2, 4)])
+} else{
+  print("Ok")
+}
+
+```
+
+
+## Climate
+
+Note: Also need to do the code classification
+```{r}
+
+#use kgc package that has databases of Koppen climate class 
+#koppen <- read.table("~/Downloads/Koeppen-Geiger-ASCII.txt", header = TRUE)
+climate_names <- read.csv("~/Documents/summer_18/kfc_climates.csv", header = TRUE)
+
+names <- factor(test$Climate, levels = levels(climate_names$Climate.Name))
+
+if (length(which(is.na(names)))>0) {
+  
+  print("There seems to be codes that do not match the Koppen climate classification. Please check below and then proceed.")
+  print(test[which(is.na(codes)), c(1,2, 5)])
+}
+
+```
+
+
+
+## Country 
+
+
+```{r}
+
+# code help from https://www.r-bloggers.com/using-rvest-to-scrape-an-html-table/
+library(rvest)
+
+#webscrape countrycodes table 
+url <- "https://wiki.openstreetmap.org/wiki/Nominatim/Country_Codes"
+
+
+countrycodes <- url %>%
+  read_html() %>%
+  html_nodes(xpath='//*[@id="mw-content-text"]/table[1]') %>%
+  html_table() 
+  
+countrycodes <- countrycodes[[1]]
+
+countrycodes <- countrycodes[, 1:2]
+names(countrycodes) <- c("CountryCode", "CountryName")
+
+
+#countrycodes$CountryCode <- factor(countrycodes$CountryCode)
+countrycodes$CountryName <- factor(countrycodes$CountryName)
+
+#need to make sure blanks get read in as "" instead of NA
+
+countries <- factor(test$Country, levels = levels(countrycodes$CountryName), order = TRUE)
+
+if (length(which(is.na(countries))) > 0){
+  print("Please check that country is not mistyped before preceeding.")
+  print(test[which(is.na(seasons)), c(1, 2, 7)])
+} else{
+  print("Ok")
+}
+
+```
+
+
+## City
+
+
+Need to get country codes of the countries. So good to check that the countries all exist first. 
+ 
+```{r}
+#code adapted from https://stackoverflow.com/questions/13905098/how-to-get-the-longitude-and-latitude-coordinates-from-a-city-name-and-country-i
+
+
+code <- c()
+for (country in test$Country){
+  
+  index <- which(levels(countrycodes$CountryName) == country)
+  code <- c(code, countrycodes$CountryCode[index])
+
+  
+}
+
+test_codes <- data.frame(code, test$City)
+names(test_codes) <- c("CountryCode", "CityName")
+head(test_codes)
+
+
+```
+
+```{r}
+nrow <- nrow(test_codes)
+counter <- 1
+test_codes$lon[counter] <- 0
+test_codes$lat[counter] <- 0
+while (counter <= nrow){
+  CityName <- gsub(' ','%20',test_codes$CityName[counter]) #remove space for URLs
+  CountryCode <- test_codes$CountryCode[counter]
+  url <- paste(
+    "http://nominatim.openstreetmap.org/search?city="
+    , CityName
+    , "&countrycodes="
+    , CountryCode
+    , "&limit=9&format=json"
+    , sep="")
+  x <- fromJSON(url)
+  if(is.vector(x)){
+    test_codes$lon[counter] <- x[[1]]$lon
+    test_codes$lat[counter] <- x[[1]]$lat    
+  }
+  counter <- counter + 1
+  Sys.sleep(1.1) #to comply with website usage guidelines 
+}
+```
+
+
+
+## Building type
+
+```{r}
+test <- data3
+
+# would we want Other instead of Others
+# also caps check? 
+buildings <- factor(test$Building.type, levels = c("Classroom", "Multifamily housing", "Office", "Senior center", "Others"))
+
+if (length(which(is.na(buildings))) > 0){
+  print("try again")
+  
+  print(test[which(is.na(buildings)), c(1, 8)])
+} else {
+  print("ok")
+}
+```
+
+
+## Cooling strategy 
+
+```{r}
+#test <- database2[800:900,]
+
+test$Cooling.startegy <- c(rep("NA", 100), "hi")
+cooling <- factor(sapply(test$Cooling.startegy, toString), levels = c("Air Conditioned", "Mechanical Ventilation", "Mixed-mode", "Natural Ventilation", "NA"))
+
+if (length(which(is.na(cooling))) > 0){
+  print("no")
+  print(test[which(is.na(cooling)), c(1, 9)])
+} else{
+  print("yes")
+}
+```
+
+
+## Heating strategy 
+
+Can't find heating strategy column??
+```{r}
+#test <- database2[800:900,]
+
+#test$Cooling.startegy <- c(rep("NA", 100), "hi")
+heating <- factor(sapply(test$Cooling.startegy, toString), levels = c("Mechanical Heating", "NA"))
+
+
+if (length(which(is.na(heating))) > 0){
+  print("no")
+  print(test[which(is.na(heating)), c(1, 9)]) #need to fix heating index
+} else{
+  print("yes")
+}
+```
+
+#Subjects' Personal Information
+
+## Age
+
+## Sex
+
+## Subject's Weight
+
+## Subject's Height
+
+#Subjective Thermal Comfort Information 
+
+
+
+
+
+
+## Thermal sensation
+
+```{r}
+#should figure out how to do column names 
+
+#test$Thermal.sensation <- c(rep(4, 3), rep(-10, 2), rep(2, 10), rep(5, 1), rep(-2, 75-16))
+
+
+max_ts <- max(test$Thermal.sensation)
+min_ts <- min(test$Thermal.sensation)
+
+#give distribution of current data points
+ggplot(test, aes(x=Thermal.sensation)) + geom_histogram( breaks=seq(-4,4, 1)) + ylab("Count") + xlab("Thermal Sensation")
+
+
+###Initial check: prints error if there are any values out of range or if there are NA values###
+if ( (max_ts > 3) | (min_ts < -3)| (is.na(max_ts))){
+  print("Some values for Thermal sensation do not seem to match with our scale. Values should be between -3 and 3. All values should also not be left blank. Please check the below rows before proceeding.")
+  print(test[(test$Thermal.sensation > 3) | (test$Thermal.sensation < -3)|is.na(test$Thermal.sensation), c(1,2, 12)])
+}
+
+###Second check: check for scales that are smaller than expected ie. -2 to 2###
+
+#Find minimum and maximum values again. This time removing NA values !!temporary!! 
+
+max_ts <- max(test$Thermal.sensation, na.rm = TRUE)
+min_ts <- min(test$Thermal.sensation, na.rm = TRUE)
+
+if ((max_ts <= 2) | (min_ts >= -2)){
+  print("We have found that there seem to be no values of thermal sensation less than -2 or greater than 2. Values should be on a scale of -3 to 3. Please check the scale you used. If simply no such values were recorded, please proceed.")
+}else {
+  print("All looks good!")
+}
+
+
+```
+
+## Thermal Preference 
+
+```{r}
+###Initial Check: check that values are "no change", "cooler" or "warmer"
+
+#make everything lowercase so factors agree
+test$Thermal.preference..cold..no.change..hot. <- tolower(test$Thermal.preference..cold..no.change..hot.)
+therm_pref <- factor(test$Revised.thermal.preference..cooler..no.change..warmer., levels= c("warmer", "no change", "cooler"))
+
+if(length(which(is.na(therm_pref))) > 0){
+  print("The following values seem to not align with our preferred values for thermal preference. Please have values be either: no change, cooler, or warmer (capitalization does not matter). Please check below before proceeding.")
+  print(test[which(is.na(therm_pref)), c( 2, 17)]) #may need to revise column number later
+} else{
+  print("All ok")
+}
+
+```
+
+```{r}
+ggplot(test, aes(x = round(as.numeric(`Thermal.sensation`), digits = 0))) +
+  geom_bar(aes(fill = `Revised.thermal.preference..cooler..no.change..warmer.`), position = 'fill') +
+  facet_grid(~`Data.contributor`) +
+  scale_fill_manual(values=c("cooler" = "#01a1ff", "no change" = "#5dae8d", "warmer" = "#ff8181")) + 
+  xlab("Thermal Sensation") + 
+  ylab("Proportion") 
+```
+
+## Air movement acceptibility
+
+## Air movement preference
+
+## Thermal comfort
+
+## Clo
+
+## Met
+
+## Activity_10
+
+## Activity_20
+
+## Activity_30
+
+## Activity_60
+
+## Humidity sensation
+
+# Instrumented Thermal Comfort Measurements
+
+## Air temperature
+
+## Ta_h
+
+## Ta_m
+
+## Ta_l
+
+## Operative temperature
+
+## Radiant temperature
+
+## Globe temperature
+
+## Tg_h
+
+## Tg_m
+
+## Tg_l
+
+## Relative humidity
+
+## Air velocity
+
+## Velocity_h
+
+## Velocity_m
+
+## Velocity_l
+
+# Calculated Indices
+
+## PMV
+
+## PPD
+
+# Environmental Control
+
+## Blind (curtain)
+
+## Fan
+
+## Window
+
+## Door
+
+## Heater
+
+## Outdoor monthly air temperature
