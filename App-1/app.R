@@ -46,7 +46,10 @@ ui <- fluidPage(
                   tabPanel("Summary", fluidRow(tableOutput("Contributor")), 
                            tableOutput("Year"), 
                            tableOutput("Season"),
-                           tableOutput("Koppen")))
+                           tableOutput("Koppen"), 
+                           tableOutput("Climate"), 
+                           tableOutput("Country"), 
+                           tableOutput("City")))
                   
       
       
@@ -148,6 +151,40 @@ server <- function(input, output) {
     
     if(check == TRUE){
       message <- data.frame(c("Koppen climate classification: passed!"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$Climate <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE )
+    
+    check <- check_climate(df1)
+    
+    if(check == TRUE){
+      message <- data.frame(c("Climate: passed!"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$Country <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE )
+    
+    check <- check_country(df1)
+    
+    if(check == TRUE){
+      message <- data.frame(c("Country: passed!"))
       names(message) <- c("")
       return(message)
     }else{

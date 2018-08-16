@@ -1,3 +1,5 @@
+library(rvest)
+
 ###Publication (Citation)
 
 ###Data Contributor
@@ -77,9 +79,7 @@ check_season <- function(df){
 ### Koppen Climate Classification 
 
 check_koppen <- function(df){
-  #use kgc package that has databases of Koppen climate class 
-  #koppen <- read.table("~/Downloads/Koeppen-Geiger-ASCII.txt", header = TRUE)
-  #climate_names <- read.csv("kfc_climates.csv", header = TRUE)
+  #climate classifications from Google and documented in a csv file 
   
   codes <- factor(df$`Koppen climate classification`, levels = levels(climate_names$Code))
   index <- which(is.na(codes))
@@ -97,10 +97,65 @@ check_koppen <- function(df){
 
 ### Climate
 
+check_climate <- function(df){
+  #climate classifications from Google and documented in a csv file 
+  
+  names <- factor(df$`Climate`, levels = levels(climate_names$`Climate Name`))
+  index <- which(is.na(names))
+  if (length(index)>0) {
+    wrong_names <- df$`Climate`[index]
+    new_df <- data.frame(index, wrong_names)
+    names(new_df) <- c("Index", "Climate")
+    return(new_df)
+    
+  }else{
+    return(TRUE)
+  }
+  
+}
+
 ### City
+
+
 
 ### Country
 
+check_country <- function(df){
+  
+  #webscrape countrycodes table 
+  
+  url <- "https://wiki.openstreetmap.org/wiki/Nominatim/Country_Codes"
+  
+  
+  countrycodes <- url %>%
+    read_html() %>%
+    html_nodes(xpath='//*[@id="mw-content-text"]/div/table') %>%
+    html_table() 
+  
+  countrycodes <- countrycodes[[1]]
+  
+  countrycodes <- countrycodes[, 1:2]
+  names(countrycodes) <- c("CountryCode", "CountryName")
+  
+  
+  #countrycodes$CountryCode <- factor(countrycodes$CountryCode)
+  countrycodes$CountryName <- factor(countrycodes$CountryName)
+  
+  #need to make sure blanks get read in as "" instead of NA
+  
+  countries <- factor(df$Country, levels = levels(countrycodes$CountryName), order = TRUE)
+  index <- which(is.na(countries))
+  if (length(index) > 0){
+    wrong_countries <- df$Country[index]
+    new_df <- data.frame(index, wrong_countries)
+    names(new_df) <- c("Index", "Country")
+    return(new_df)
+  } else{
+    return(TRUE)
+  }
+  
+  
+}
 ### Building type
 
 ### Cooling strategy building level
