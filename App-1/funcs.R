@@ -1,5 +1,10 @@
 library(rvest)
 
+##########
+# Function with a _R at the end indicate that they are functions to test reasonability. 
+# All other functions to check correct formatting for submission. 
+##########
+
 ###Publication (Citation)
 
 ###Data Contributor
@@ -158,9 +163,30 @@ check_country <- function(df){
 }
 ### Building type
 
+check_building <- function(df){
+  
+  buildings <- factor(df$`Building type`, levels = c("Classroom", "Multifamily housing", "Office", "Senior Center", "Others"))
+  
+  index <- which(is.na(buildings))
+  if (length(index) > 0){
+    wrong_buildings <- df$`Building type`[index]
+    new_df <- data.frame(index, wrong_buildings)
+    names(new_df) <- c("Index", "Building type")
+    return(new_df)
+  } else {
+    return(TRUE)
+  }
+}
+
 ### Cooling strategy building level
 
+
+
+
 ### Cooling strategy for MM buildings
+
+
+
 
 ### Heating strategy building level 
 
@@ -170,7 +196,23 @@ check_country <- function(df){
 
 ### Thermal Sensation
 
+test_thermal_sensation_R <- function(df){
+  #test if thermal sensation values at reported temperatures seem reasonable 
+  #by performing linear regression and checking for positive correlation 
+  
+  fit <- lm(`Thermal sensation` ~ `Air temperature (°F)`, data=df)
+  if(fit$coefficients[2] > 0){
+    return(TRUE)
+  }else{
+    ggplot(df, aes(x = `Air temperature (°F)`, y = `Thermal sensation`)) + geom_point() + 
+      xlab("Air Temperature (F)") + ylab("Thermal Sensation")
+  }
+  
+}
+
 ### Thermal acceptibility
+
+
 
 ### Thermal preference
 
@@ -190,16 +232,77 @@ check_country <- function(df){
 
 ### Temperatures
 
-check_temp <- function(temperatures, min, max){
+check_temp_R <- function(temperatures, min, max){
   #want to check that temperatures are all integers and fall within a reasonable range
+  #enter the column to be checked instead of the whole data frame 
   
+  under <- ifelse(temperatures < min, TRUE, FALSE)
+  over <- ifelse(temperatures > max, TRUE, FALSE)
   
+  index <- c(which(under), which(over))
   
+  if (length(index) > 0){
+    
+    unreason_temp <- temperatures[index]
+    new_df <- data.frame(index, unreason_temp)
+    names(new_df) <- c("Index", "Temperature")
+    return(new_df)
+  } else{
+    return(TRUE)
+  }
+  
+
 }
 
 ### Clo
 
+check_clo_R <- function(df){
+  #want to check that clo values are all positive values and fall within a reasonable range
+  #assume it is reasonable for clo values to be between 0 and 5. 
+  
+  clo <- df$`Clo`
+  under <- ifelse(clo < 0, TRUE, FALSE)
+  over <- ifelse(clo > 5, TRUE, FALSE)
+  
+  index <- c(which(under), which(over))
+  
+  if (length(index) > 0){
+    
+    unreason_clo <- clo[index]
+    new_df <- data.frame(index, unreason_clo)
+    names(new_df) <- c("Index", "Clo")
+    return(new_df)
+  } else{
+    return(TRUE)
+  }
+  
+  
+}
+
 ### Met 
+
+check_met_R <- function(met){
+  #want to check that metabolic rate values fall within a reasonable range
+  #assume it is reasonable for metabolic rate values to be between 0 and 10. 
+  
+  
+  under <- ifelse(met < 0, TRUE, FALSE)
+  over <- ifelse(met > 10, TRUE, FALSE)
+  
+  index <- c(which(under), which(over))
+  
+  if (length(index) > 0){
+    
+    unreason_met <- met[index]
+    new_df <- data.frame(index, unreason_met)
+    names(new_df) <- c("Index", "Metabolic Rate")
+    return(new_df)
+  } else{
+    return(TRUE)
+  }
+  
+  
+}
 
 ### Velocity 
 
