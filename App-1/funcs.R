@@ -13,7 +13,6 @@ check_contributor <- function(df){
   
   if (length(which(grepl("[[:digit:]]", contributor))) > 0){
     index <- which(grepl("[[:digit:]]", contributor))
-    print(index)
     contributors <- contributor[index]
     new_df <- data.frame(index, contributors)
     names(new_df) <- c('Index', 'Contributor')
@@ -123,6 +122,9 @@ check_climate <- function(df){
 
 
 
+
+
+
 ### Country
 
 check_country <- function(df){
@@ -212,9 +214,67 @@ test_thermal_sensation_R <- function(df){
 
 ### Thermal acceptibility
 
+test_thermal_acceptibility_R <- function(df){
+  ### Tests reasonability of thermal acceptability votes
+  ### Returns true if the number of votes in "acceptable" or "1" is quadratic (concave down)
+  ### with thermal sensation. 
+  
+  #count the number of votes as acceptable or unacceptable for each thermal sensation 
+  accept <- count(df, vars = `Thermal sensation`, wt_var = `Thermal sensation acceptability`)
+  
+  #filter to a dataframe that has votes for acceptable
+  accept_1 <- accept %>% 
+    filter(wt_var == 1)
+  
+  #fit a function that is quadratic with votes for acceptable
+  fit <- lm(n ~ I(vars^2), data = accept_1)
+  
+  if(fit$coefficients[2] < 0){
+    return(T)
+  }else{
+    return(F)
+  }
+  
+}
+
 
 
 ### Thermal preference
+
+test_thermal_preference_R <- function(df){
+  ### Tests reasonability of thermal preference votes (quick check)
+  ### Returns true if proportion of people who want warmer decrease with increase in thermal sensation 
+  ### and if proportion of people who want cooler increase with thermal sensation. 
+  
+  #count each thermal preference in each thermal sensation bin
+  pref <- count(new_df, vars = `Thermal sensation`, wt_vars = `Thermal preference`)
+  
+  #filter to find proportions in each thermal sensation bin that voted "cooler"
+  cooler <- pref %>% 
+    group_by(vars) %>%
+    mutate(total = sum(n)) %>% 
+    mutate(prop = n/total) %>%
+    filter(wt_vars == "cooler")
+  
+  #filter to find proportions in each thermal sensation bin that voted "warmer"
+  warmer <- pref %>% 
+    group_by(vars) %>%
+    mutate(total = sum(n)) %>% 
+    mutate(prop = n/total) %>%
+    filter(wt_vars == "warmer")
+  
+  #fit linear functions to check that people who want cooler or warmer are increasing 
+  #or decreasing with respect to thermal sensation 
+  fit_cooler <- lm(prop ~ vars, data = cooler)
+  fit_warmer <- lm(prop ~ vars, data = warmer)
+  
+  if(fit_cooler$coefficients[2] > 0 && fit_warmer$coefficients[2] <0){
+    return(T)
+  }else{
+    return(F)
+  }
+  
+}
 
 ### Air movement acceptibility
 
@@ -229,6 +289,9 @@ test_thermal_sensation_R <- function(df){
 ### PMV
 
 ### PPD
+
+###### Note: only need one function for temperature, clo, met, velocity, weight, height age, etc. 
+############ Make a range check function. Then one function for blind, fan, curtain, heater etc. 
 
 ### Temperatures
 

@@ -1,5 +1,6 @@
 library(shiny)
 library(shinyjs)
+library(plotly)
 source("funcs.R")
 #csv file with Koppen climate names and codes
 climate_names <- read.csv("kfc_climates.csv", header = TRUE)
@@ -49,7 +50,8 @@ ui <- fluidPage(
                            tableOutput("Koppen"), 
                            tableOutput("Climate"), 
                            tableOutput("Country"), 
-                           tableOutput("City")))
+                           tableOutput("City"), 
+                           plotlyOutput("Thermal_sensation")))
                   
       
       
@@ -128,7 +130,7 @@ server <- function(input, output) {
     req(input$file1)
     
     df1 <- read.csv(input$file1$datapath, sep = ",",
-                    header = TRUE, stringsAsFactors = FALSE )
+                    header = TRUE, stringsAsFactors = FALSE, check.names = FALSE)
     
     check <- check_season(df1)
     
@@ -190,6 +192,19 @@ server <- function(input, output) {
     }else{
       return(check)
     }
+  })
+  
+  output$Thermal_sensation <- renderPlotly({
+    
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
+    
+    test_thermal_sensation_R(df1)
+    
+    
+    
   })
   
 }
