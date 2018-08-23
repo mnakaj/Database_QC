@@ -373,12 +373,32 @@ check_met_R <- function(met){
 
 ### Height
 
-### Blind (curtain)
+### Environmental Controls
 
-### Fan
+##### Function to check format for Blinds, Fans, Windows, Doors, Heaters 
+##### Input column for each above into col of function. 
 
-### Window
+check_environ_control <- function(col){
+  
+  output <- as.character(col)
+  
+  #check if column has 0, 1 or an NA value. 
+  checked <- ifelse(grepl("[01]", col)|is.na(col), FALSE, TRUE)
+  
+  index <- which(checked)
+  
+  if(length(index) == 0){
+    return(T)
+  }else{
+    wrong_environ <- col[index]
+    new_df <- data.frame(index, wrong_environ)
+    names(new_df) <- c("Index", "Input Value")
+    return(new_df)
+  }
+  
+  
+  
+}
 
-### Door
 
 
