@@ -155,7 +155,7 @@ url <- "https://wiki.openstreetmap.org/wiki/Nominatim/Country_Codes"
 
 countrycodes <- url %>%
   read_html() %>%
-  html_nodes(xpath='//*[@id="mw-content-text"]/table[1]') %>%
+  html_nodes(xpath='//*[@id="mw-content-text"]/div/table') %>%
   html_table() 
   
 countrycodes <- countrycodes[[1]]
@@ -257,7 +257,7 @@ if (length(which(is.na(buildings))) > 0){
 ```{r}
 #test <- database2[800:900,]
 
-test$Cooling.startegy <- c(rep("NA", 100), "hi")
+#test$Cooling.startegy <- c(rep("NA", 100), "hi")
 cooling <- factor(sapply(test$Cooling.startegy, toString), levels = c("Air Conditioned", "Mechanical Ventilation", "Mixed-mode", "Natural Ventilation", "NA"))
 
 if (length(which(is.na(cooling))) > 0){
@@ -291,90 +291,247 @@ if (length(which(is.na(heating))) > 0){
 
 ## Age
 
+```{r}
+is_int_age <- sapply(test$Age, is.integer)
+
+if (length(which(!is_int_age)) > 0){
+  print("Please fix non-integer age values.")
+  print(test[which(!is_int_age), c(1, 10)])
+}
+
+age_range <- ifelse(test$Age <= 100 || test$Age >= 0, FALSE, TRUE)
+
+if (length(which(age_range)) > 0){
+  print("Age seems unusually high or low. Please check and then proceed.")
+  print(test[which(age_range), c(1, 10)])
+}else{
+  print("All looks good.")
+}
+```
+
+
 ## Sex
+
+```{r}
+sex <- factor(test$Sex, levels = c("Male", "Female"))
+
+if (length(which(is.na(sex))) > 0){
+  print("try again")
+  
+  print(test[which(is.na(sex)), c(1, 11)])
+} else {
+  print("ok")
+}
+```
+
 
 ## Subject's Weight
 
+```{r}
+is_num_weight <- sapply(test$`Subject.s.weight.kg.`, is.numeric)
+
+if (length(which(!is_num_weight)) > 0){
+  print("Please fix non-numeric weight values.")
+  print(test[which(!is_num_weight), c(1, 63)]) #may need to fix index
+}
+
+weight_range <- ifelse(test$`Subject.s.weight.kg.` <= 150 || test$`Subject.s.weight.kg.` >= 15, FALSE, TRUE)
+
+if (length(which(weight_range)) > 0){
+  print("Some weights seems unusually high or low. Please check and then proceed.")
+  print(test[which(weight_range), c(1, 63)]) #fix index
+}else{
+  print("All looks good.")
+}
+```
+
+
 ## Subject's Height
 
+```{r}
+is_num_height <- sapply(test$`Subject.s.height..cm.`, is.numeric)
+
+if (length(which(!is_num_height)) > 0){
+  print("Please fix non-numeric height values.")
+  print(test[which(!is_num_height), c(1, 62)])
+}
+
+height_range <- ifelse(test$`Subject.s.height..cm.` <= 250 || test$test$`Subject.s.height..cm.` >= 60, FALSE, TRUE)
+
+if (length(which(height_range)) > 0){
+  print("Some heights seems unusually high or low. Please check and then proceed.")
+  print(test[which(height_range), c(1, 62)]) #fix index 
+}else{
+  print("All looks good.")
+}
+```
+
 #Subjective Thermal Comfort Information 
-
-
-
-
-
 
 ## Thermal sensation
 
 ```{r}
-#should figure out how to do column names 
-
-#test$Thermal.sensation <- c(rep(4, 3), rep(-10, 2), rep(2, 10), rep(5, 1), rep(-2, 75-16))
-
-
-max_ts <- max(test$Thermal.sensation)
-min_ts <- min(test$Thermal.sensation)
-
-#give distribution of current data points
-ggplot(test, aes(x=Thermal.sensation)) + geom_histogram( breaks=seq(-4,4, 1)) + ylab("Count") + xlab("Thermal Sensation")
+library(ggplot2)
+ggplot(test, aes(x = `Air.temperature...F.`, y = Thermal.sensation)) + geom_point()
 
 
-###Initial check: prints error if there are any values out of range or if there are NA values###
-if ( (max_ts > 3) | (min_ts < -3)| (is.na(max_ts))){
-  print("Some values for Thermal sensation do not seem to match with our scale. Values should be between -3 and 3. All values should also not be left blank. Please check the below rows before proceeding.")
-  print(test[(test$Thermal.sensation > 3) | (test$Thermal.sensation < -3)|is.na(test$Thermal.sensation), c(1,2, 12)])
-}
+fit <- lm(Thermal.sensation ~ `Air.temperature...F.`, data=test)
+summary(fit) # show results
+```
 
-###Second check: check for scales that are smaller than expected ie. -2 to 2###
 
-#Find minimum and maximum values again. This time removing NA values !!temporary!! 
+## Thermal acceptibility
 
-max_ts <- max(test$Thermal.sensation, na.rm = TRUE)
-min_ts <- min(test$Thermal.sensation, na.rm = TRUE)
+```{r}
+accept <- df3$`Thermal sensation acceptability`
+temp <- df3$`Air temperature (°F)`
 
-if ((max_ts <= 2) | (min_ts >= -2)){
-  print("We have found that there seem to be no values of thermal sensation less than -2 or greater than 2. Values should be on a scale of -3 to 3. Please check the scale you used. If simply no such values were recorded, please proceed.")
-}else {
-  print("All looks good!")
-}
-
+ggplot(df3, aes(x =`Thermal sensation`)) + geom_bar(aes(fill = factor(`Thermal sensation acceptability`)))
+```
+```{r}
 
 ```
 
-## Thermal Preference 
 
 ```{r}
-###Initial Check: check that values are "no change", "cooler" or "warmer"
+accept <- new_df$`Thermal sensation acceptability`
+temp <- new_df$`Air temperature (°F)`
 
-#make everything lowercase so factors agree
-test$Thermal.preference..cold..no.change..hot. <- tolower(test$Thermal.preference..cold..no.change..hot.)
-therm_pref <- factor(test$Revised.thermal.preference..cooler..no.change..warmer., levels= c("warmer", "no change", "cooler"))
+ggplot(new_df, aes(x =`Thermal sensation`)) + geom_bar(aes(fill = factor(`Thermal sensation acceptability`)))
+```
+```{r}
+library(dplyr)
+```
 
-if(length(which(is.na(therm_pref))) > 0){
-  print("The following values seem to not align with our preferred values for thermal preference. Please have values be either: no change, cooler, or warmer (capitalization does not matter). Please check below before proceeding.")
-  print(test[which(is.na(therm_pref)), c( 2, 17)]) #may need to revise column number later
-} else{
-  print("All ok")
-}
+```{r}
+accept <- count(new_df, vars = `Thermal sensation`, wt_var = `Thermal sensation acceptability`)
+
+summ <- accept %>% 
+  group_by(vars) %>% 
+  mutate(total = sum(n)) %>% 
+  mutate(prop = n/total)
+
+accept_1 <- accept %>% 
+  filter(wt_var == 1)
+```
+```{r}
+accept_1
 
 ```
 
 ```{r}
-ggplot(test, aes(x = round(as.numeric(`Thermal.sensation`), digits = 0))) +
-  geom_bar(aes(fill = `Revised.thermal.preference..cooler..no.change..warmer.`), position = 'fill') +
-  facet_grid(~`Data.contributor`) +
-  scale_fill_manual(values=c("cooler" = "#01a1ff", "no change" = "#5dae8d", "warmer" = "#ff8181")) + 
-  xlab("Thermal Sensation") + 
-  ylab("Proportion") 
+ggplot(accept_1, aes(x = vars, y = n)) + geom_point()
+```
+```{r}
+fit <- lm(n ~ I(vars^2), data = accept_1)
+summary(fit)
 ```
 
+```{r}
+accept <- df3$`Thermal sensation acceptability`
+temp <- df3$`Air temperature (°F)`
+
+ggplot(df3, aes(x =`Thermal sensation`, y = `Thermal sensation acceptability`)) + geom_point(aes(col = `Thermal sensation acceptability`))
+```
+
+## Thermal preference
+
+```{r}
+ggplot(new_df, aes(x= round(`Thermal sensation`), y = `Thermal preference` )) + geom_bar(aes(fill = factor(`Thermal preference`)), position = "fill", stat = 'identity')
+```
+
+```{r}
+ggplot(new_df, aes(x= `Air temperature (°F)`, y = `Thermal preference` )) + geom_point(aes(col = `Thermal preference`))
+```
+```{r}
+ggplot(df3, aes(x=`Thermal sensation`, y = `Thermal preference` )) + geom_bar(aes(fill = factor(`Thermal preference`)), position = "fill", stat = 'identity')
+```
+
+
+
+```{r}
+pref <- count(new_df, vars = `Thermal sensation`, wt_vars = `Thermal preference`)
+
+cooler <- pref %>% 
+  group_by(vars) %>%
+  mutate(total = sum(n)) %>% 
+  mutate(prop = n/total) %>%
+  filter(wt_vars == "cooler")
+
+warmer <- pref %>% 
+  group_by(vars) %>%
+  mutate(total = sum(n)) %>% 
+  mutate(prop = n/total) %>%
+  filter(wt_vars == "warmer")
+
+```
+```{r}
+plot(warmer$vars, warmer$prop)
+```
+
+```{r}
+plot(cooler$vars, cooler$prop)
+```
+
+```{r}
+fit_cooler <- lm(prop ~ vars, data = cooler)
+summary(fit_cooler)
+```
+```{r}
+fit_warmer <- lm(prop ~ vars, data = warmer)
+summary(fit_warmer)
+```
+
+
+```{r}
+djamala <- df %>% filter(`Data contributor` == "Djamila")
+```
+
+```{r}
+ggplot(djamala, aes(x=`Thermal sensation`, y = `Thermal preference` )) + geom_bar(aes(fill = factor(`Thermal preference`)), position = "fill", stat = 'identity')
+```
+
+```{r}
+pref <- count(new_df, vars = `Thermal sensation`, wt_vars = `Thermal preference`)
+
+cooler <- pref %>% 
+  group_by(vars) %>%
+  mutate(total = sum(n)) %>% 
+  mutate(prop = n/total) %>%
+  filter(wt_vars == "cooler")
+
+warmer <- pref %>% 
+  group_by(vars) %>%
+  mutate(total = sum(n)) %>% 
+  mutate(prop = n/total) %>%
+  filter(wt_vars == "warmer")
+
+```
+```{r}
+plot(cooler$vars, cooler$prop)
+```
+
+
+```{r}
+fit_cooler <- lm(prop ~ vars, data = cooler)
+summary(fit_cooler)
+```
+```{r}
+fit_warmer <- lm(prop ~ vars, data = warmer)
+summary(fit_warmer)
+```
 ## Air movement acceptibility
 
 ## Air movement preference
+```{r}
+ggplot(df3, aes(x = round(`Air velocity (m/s)`, digits = 2))) + geom_bar(aes(fill = factor(`Air movement preference`)), position = "fill")
+```
 
 ## Thermal comfort
 
 ## Clo
+
+
 
 ## Met
 
