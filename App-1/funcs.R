@@ -276,16 +276,6 @@ test_thermal_preference_R <- function(df){
   
 }
 
-### Thermal comfort
-
-### Air movement acceptibility
-
-### Air movement preference
-
-
-### Humidity sensation
-
-### Humidity preference 
 
 ### PMV
 
