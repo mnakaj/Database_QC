@@ -182,15 +182,60 @@ check_building <- function(df){
 
 ### Cooling strategy building level
 
+check_cooling <- function(df){
+  
+  buildings <- factor(df$`Cooling startegy_building level`, levels = c("Air Conditioned", "Mixed Mode", "Naturally Ventilated", "Mechanically Ventilated"))
+  
+  index <- intersect(which(is.na(buildings)), which(!is.na(df$`Cooling startegy_building level`)))
+  if (length(index) > 0){
+    wrong_cooling <- df$`Cooling startegy_building level`[index]
+    new_df <- data.frame(index, wrong_cooling)
+    names(new_df) <- c("Index", "Cooling Strategy")
+    return(new_df)
+  } else {
+    return(TRUE)
+  }
+}
 
 
 
 ### Cooling strategy for MM buildings
 
+check_cooling_mm <- function(df){
+  
+  buildings <- factor(df$`Cooling startegy_operation mode for MM buildings`, levels = c("Air Conditioned", "Naturally Ventilated", "Unknown"))
+  
+  index <- intersect(which(is.na(buildings)), which(!is.na(df$`Cooling startegy_operation mode for MM buildings`)))
+  if (length(index) > 0){
+    wrong_cooling <- df$`Cooling startegy_operation mode for MM buildings`[index]
+    new_df <- data.frame(index, wrong_cooling)
+    names(new_df) <- c("Index", "Cooling Strategy MM")
+    return(new_df)
+  } else {
+    return(TRUE)
+  }
+}
 
 
 
 ### Heating strategy building level 
+
+check_heating <- function(df){
+  
+  buildings <- factor(df$`Heating strategy_building level`, levels = c("Mechanical Heating"))
+  
+  index <- intersect(which(is.na(buildings)), which(!is.na(df$`Heating strategy_building level`)))
+  if (length(index) > 0){
+    wrong_heating <- df$`Heating strategy_building level`[index]
+    new_df <- data.frame(index, wrong_heating)
+    names(new_df) <- c("Index", "Heating Strategy")
+    return(new_df)
+  } else {
+    return(TRUE)
+  }
+}
+
+
 
 ### Age
 
