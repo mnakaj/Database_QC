@@ -239,7 +239,43 @@ check_heating <- function(df){
 
 ### Age
 
+test_age <- function(df){
+  print(unique(df$`Data contributor`))
+  age <- df$`Age`
+  is_int_age <- sapply(age, is.numeric)
+
+  age_range <- ifelse( (age <= 100 || age >= 0 ) & abs(round(age)- age) == 0, FALSE, TRUE)
+  
+  if (length(which(age_range)) > 0 || length(which(!is_int_age)) > 0 ){
+    index <- unique(union(which(!is_int_age), which(age_range)))
+    wrong_age <- df$Age[index]
+    new_df <- data.frame(index, wrong_age)
+    
+    names(new_df) <- c("Index", "Age")
+    return(new_df)
+  }else{
+    return(T)
+  }
+  
+}
+
 ### Sex
+
+
+check_sex <- function(df){
+  
+  sex <- factor(df$`Sex`, levels = c("Male", "Female"))
+  
+  index <- intersect(which(is.na(sex)), which(!is.na(df$`Sex`)))
+  if (length(index) > 0){
+    wrong_sex <- df$`Sex`[index]
+    new_df <- data.frame(index, wrong_sex)
+    names(new_df) <- c("Index", "Sex")
+    return(new_df)
+  } else {
+    return(TRUE)
+  }
+}
 
 ### Thermal Sensation
 
@@ -405,9 +441,76 @@ check_met_R <- function(met){
 
 ### Velocity 
 
+#input the column that needs to be checked
+#also min/max depended on units
+#would want ~0-5m/s
+test_velocity <- function(vel, min, max){
+  
+  
+  is_int_vel <- sapply(vel, is.numeric)
+  
+  #check for a reasonable weight range
+  vel_range <- ifelse( vel <= max || vel >= min  , FALSE, TRUE)
+  
+  if (length(which(vel_range)) > 0 || length(which(!is_int_vel)) > 0 ){
+    index <- unique(union(which(!is_int_vel), which(vel_range)))
+    wrong_vel <- vel[index]
+    new_df <- data.frame(index, wrong_vel)
+    
+    names(new_df) <- c("Index", "Velocity")
+    return(new_df)
+  }else{
+    return(T)
+  }
+  
+}
+
 ### Weight 
 
+test_weight <- function(df){
+  
+  weight <- df$`Subject´s weight (kg)`
+  is_int_weight <- sapply(weight, is.numeric)
+  
+  #check for a reasonable weight range
+  weight_range <- ifelse( weight <= 150 || weight >= 15  , FALSE, TRUE)
+  
+  if (length(which(weight_range)) > 0 || length(which(!is_int_weight)) > 0 ){
+    index <- unique(union(which(!is_int_weight), which(weight_range)))
+    wrong_weight <- weight[index]
+    new_df <- data.frame(index, wrong_weight)
+    
+    names(new_df) <- c("Index", "Weight")
+    return(new_df)
+  }else{
+    return(T)
+  }
+  
+}
+
 ### Height
+test_height <- function(df){
+  
+  height <- df$`Subject´s height (kg)`
+  is_int_height <- sapply(height, is.numeric)
+  
+  #check for a reasonable height range
+  height_range <- ifelse( height <= 250 || height >= 60  , FALSE, TRUE)
+  
+  if (length(which(height_range)) > 0 || length(which(!is_int_height)) > 0 ){
+    index <- unique(union(which(!is_int_height), which(height_range)))
+    wrong_height <- height[index]
+    new_df <- data.frame(index, wrong_height)
+    
+    names(new_df) <- c("Index", "Height")
+    return(new_df)
+  }else{
+    return(T)
+  }
+  
+}
+
+
 
 ### Environmental Controls
 
