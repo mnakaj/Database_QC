@@ -43,15 +43,28 @@ ui <- fluidPage(
       
       
       tabsetPanel(type = "tabs",
-                  tabPanel("Table", tableOutput("contents")),
-                  tabPanel("Summary", fluidRow(tableOutput("Contributor")), 
+                  tabPanel("Submitted Data", tableOutput("contents")),
+                  tabPanel("Basic Identifiers", fluidRow(tableOutput("Contributor"), 
                            tableOutput("Year"), 
                            tableOutput("Season"),
                            tableOutput("Koppen"), 
                            tableOutput("Climate"), 
                            tableOutput("Country"), 
                            tableOutput("City"), 
-                           plotlyOutput("Thermal_sensation")))
+                           tableOutput("Building Type"), 
+                           tableOutput("Cooling Strategy"), 
+                           tableOutput("Cooling Strategy with MM"), 
+                           tableOutput("Heating Strategy"))), 
+                  tabPanel("Subjects' Information", fluidRow(tableOutput("Age"),
+                             tableOutput("Sex"), 
+                             tableOutput("Weight"),
+                             tableOutput("Height")
+                             
+                           )), 
+                  tabPanel("Subjective Comfort Data", fluidRow()), 
+                  tabPanel("Instrumented Measurements", fluidRow()), 
+                  tabPanel("Calculated Indices", fluidRow()),
+                  tabPanel("Environmental Control"))
                   
       
       
@@ -194,17 +207,73 @@ server <- function(input, output) {
     }
   })
   
-  output$Thermal_sensation <- renderPlotly({
-    
+  output$Age <- renderTable({
     req(input$file1)
     
     df1 <- read.csv(input$file1$datapath, sep = ",",
-                    header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
+                    header = TRUE, stringsAsFactors = FALSE )
     
-    test_thermal_sensation_R(df1)
+    check <- check_age(df1)
     
+    if(check == TRUE){
+      message <- data.frame(c("Age: passed!"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  
+  output$Sex <- renderTable({
+    req(input$file1)
     
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE )
     
+    check <- check_sex(df1)
+    
+    if(check == TRUE){
+      message <- data.frame(c("Sex: passed!"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$Weight <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE )
+    
+    check <- check_weight(df1)
+    
+    if(check == TRUE){
+      message <- data.frame(c("Weight: passed!"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$Height <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE )
+    
+    check <- check_height(df1)
+    
+    if(check == TRUE){
+      message <- data.frame(c("Height: passed!"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
   })
   
 }

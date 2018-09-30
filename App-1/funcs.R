@@ -239,7 +239,7 @@ check_heating <- function(df){
 
 ### Age
 
-test_age <- function(df){
+check_age <- function(df){
   print(unique(df$`Data contributor`))
   age <- df$`Age`
   is_int_age <- sapply(age, is.numeric)
@@ -444,7 +444,7 @@ check_met_R <- function(met){
 #input the column that needs to be checked
 #also min/max depended on units
 #would want ~0-5m/s
-test_velocity <- function(vel, min, max){
+check_velocity <- function(vel, min, max){
   
   
   is_int_vel <- sapply(vel, is.numeric)
@@ -467,7 +467,7 @@ test_velocity <- function(vel, min, max){
 
 ### Weight 
 
-test_weight <- function(df){
+check_weight <- function(df){
   
   weight <- df$`Subject´s weight (kg)`
   is_int_weight <- sapply(weight, is.numeric)
@@ -489,7 +489,7 @@ test_weight <- function(df){
 }
 
 ### Height
-test_height <- function(df){
+check_height <- function(df){
   
   height <- df$`Subject´s height (kg)`
   is_int_height <- sapply(height, is.numeric)
