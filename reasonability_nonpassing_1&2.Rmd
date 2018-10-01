@@ -1,0 +1,164 @@
+---
+title: "Reasonability Tests - Database I & II"
+author: "Mia Nakajima"
+date: "9/4/2018"
+output: 
+  rmarkdown::html_document:
+    theme: paper
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F)
+```
+
+
+### Overview: 
+
+Review of studies not passing reasonability tests. 
+
+## Thermal 
+
+```{r warning = FALSE, message = FALSE, echo = FALSE}
+library(ggplot2)
+library(dplyr)
+library(here)
+```
+```{r warning = FALSE, echo = FALSE}
+df <- read.csv(here("Database1&2_Ariel.csv"), sep = ",", header = TRUE, stringsAsFactors = FALSE, check.names = FALSE)
+
+
+```
+
+
+```{r}
+# We want to split the data frame by publication
+names <- unique(df$`Publication`)
+
+```
+
+```{r}
+for (i in 1:length(names)){
+  df_split <- df[which(df$`Publication` == names[i]),]
+  label <- paste("publication", as.character(i), sep = "")
+  assign(label, df_split)
+}
+```
+
+### Thermal sensation: 
+
+There are 49 applicable studies. All pass. 
+
+### Thermal acceptibility
+
+There are 30 applicable studies. All pass. 
+
+
+
+### Thermal preference 
+
+There are 44 applicable studies. Of those, 2 do not pass: 
+
+- Djamila, H., Chu, C. M., & Kumaresan, S. (2013). Field study of thermal comfort in residential buildings in the equatorial hot-humid climate of Malaysia. Building and Environment, 62, 133-142.
+
+- Akande, O. K., & Adebamowo, M. A. (2010, April). Indoor thermal comfort for residential buildings in hot-dry climate of Nigeria. In Proceedings of Conference: Adapting to Change: New Thinking on Comfort, Cumberland Lodge, Windsor, UK (Vol. 911, p. 133144).
+
+```{r warning = FALSE, message = FALSE}
+not_pass <- rbind(publication21, publication42 )
+not_pass1 <- subset(not_pass, !(is.na(`Thermal preference`)))
+
+ggplot(not_pass1, aes(x = round(`Thermal sensation`), y = rep(1, times = nrow(not_pass1)))) + 
+  geom_bar(aes(fill = factor(`Thermal preference`, levels = c("warmer", "no change", "cooler"))), position = "fill", stat = "identity") + 
+  facet_grid(~`Data contributor`) + 
+  xlab("Rounded Thermal Sensation") + 
+  ylab("Proportion - Thermal Preference") + 
+  scale_fill_discrete(name = "Thermal preference legend") + 
+  ggtitle("Not passing - Thermal preference")
+
+
+```
+
+
+### Thermal Comfort
+
+
+There are 27 applicable studies. Of those, 2 do not pass. 
+
+- Kim, H. 2012. Methodology for rating a building's overall performance based on the ASHRAE/CIBSE/USGBC Performance Measurement Protocols for Commercial Buildings. Ph.D. dissertation, Department of Architecture, Texas A&M University.
+
+- Akande, O. K., & Adebamowo, M. A. (2010, April). Indoor thermal comfort for residential buildings in hot-dry climate of Nigeria. In Proceedings of Conference: Adapting to Change: New Thinking on Comfort, Cumberland Lodge, Windsor, UK (Vol. 911, p. 133144).
+
+```{r}
+
+df_new <- rbind(publication2, publication42)
+```
+
+```{r warning = FALSE}
+ggplot(subset(df_new, !is.na(`Thermal comfort`)), aes(x = round(`Thermal sensation`), y = rep(1, times = nrow(subset(df_new, !is.na(`Thermal comfort`)))))) + 
+  geom_bar(aes(fill =  factor(cut(as.numeric(`Thermal comfort`, na.rm = T), breaks = c(0,3.5, 6), na.rm = T))), position = "fill", stat = 'identity', na.rm = TRUE)  + 
+  facet_grid(~`Data contributor`) + 
+  scale_fill_discrete(name = "Thermal comfort levels") + 
+  xlab("Rounded thermal sensation") + 
+  ylab("Proportion - Thermal comfort") + 
+  ggtitle("Not passing - Thermal comfort vs. Thermal sensation")
+
+
+```
+
+
+## Air movement
+
+### Air movement preference 
+
+There are 23 studies and 1 does not pass. 
+
+- Stoops, J. L."The thermal environmentand occupant perceptions in European office buildings". Doctoral thesis. Chalmers University of Technology, 2000. ISBN: 993-356207-x. 
+
+```{r warning = FALSE, message = FALSE}
+not_pass <- rbind( publication27 )
+not_pass1 <- subset(not_pass, !(is.na(`Air movement preference`)))
+
+ggplot(not_pass1, aes(x = round(`Air temperature (°C)`), y = rep(1, times = nrow(not_pass1)))) + 
+  geom_bar(aes(fill = factor(`Air movement preference`, levels = c("less", "no change", "more"))), position = "fill", stat = "identity") + 
+  facet_grid(~`Data contributor`) + 
+  xlab("Rounded Temperature") + 
+  ylab("Proportion - Air movement Preference") + 
+  scale_fill_discrete(name = "Thermal preference legend") + 
+  ggtitle("Not passing - Air movement preference")
+
+
+```
+
+### Air movement acceptibility reasonability 
+
+11 applicable studies. 1 Study does not pass. 
+
+- Gail Brager, Gwelen Paliaga, Richard de Dear. Operable windows, personal control and occupant comfort. ASHRAE Transactions. 110(2) 
+
+```{r}
+sub_n3 <- subset(publication3, !(is.na(`Air movement preference`)))
+ggplot(sub_n3, aes(x = factor(`Air movement preference`, levels = c("less", "no change", "more")), y = rep(1, times = nrow(sub_n3)))) + 
+  geom_bar(aes(fill = factor(round((`Air movement acceptability`)))), stat = 'identity', position = 'fill') + 
+  xlab("Air movement preference") + 
+  ylab("Air movement acceptability proportion") + 
+  scale_fill_discrete(name = "Acceptability") + 
+  ggtitle("Non-passing Air Movement Acceptability")
+
+
+```
+
+
+##Humidity
+
+
+
+
+### Humidity Sensation
+
+9 applicable studies. All pass.
+
+### Humidity preference
+
+7 applicable studies. All pass. 
+
+
