@@ -79,9 +79,7 @@ There are 23 studies and 1 does not pass.
 ![](reasonability_nonpassing_1_2_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
 
 
-##Humidity
-
-
+## Humidity
 
 
 ### Humidity Sensation
