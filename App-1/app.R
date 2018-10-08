@@ -2,10 +2,9 @@ library(shiny)
 library(shinyjs)
 library(plotly)
 library(dplyr)
-
 source("funcs.R")
 #csv file with Koppen climate names and codes
-climate_names <- read.csv("kfc_climates.csv", header = TRUE)
+climate_names <- read.csv("./Data/kfc_climates.csv", header = TRUE)
 
 NUM_PAGES <- 2
 
@@ -423,6 +422,36 @@ server <- function(input, output) {
     df1 <- read.csv(input$file1$datapath, sep = ",",
                     header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
     ggplot(df1, aes(x =`Air temperature (°F)`)) + geom_bar(aes(fill = factor(`Thermal sensation acceptability`)))
+  })
+  
+  output$T_comfort <- renderText({
+    
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
+    names(df1)[1] <- "Index"
+    check <- test_thermal_comfort_R(df1)
+    
+    if(is.na(check)){
+      return("No applicable reasonability test.")
+    }else if(check == F){
+      return("Thermal comfort: Study did not pass reasonability test. Please check encoding.")
+    }else{
+      return("Thermal comfort: Study passes reasonability test.")
+    }
+    
+  })
+  
+  output$A_preference <- renderText({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
+    names(df1)[1] <- "Index"
+    
+    check <- test_air_preference_R(df1)
+    
   })
 }
 

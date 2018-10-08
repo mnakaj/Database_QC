@@ -432,17 +432,17 @@ test_thermal_comfort_R <- function(df){
 
 test_air_preference_R <- function(df){
   ### Function to check reasonability of air preference votes
-  ### Fits a linear model to average air preference at each temperature. 
-  ### Checks if on average, people want more air movement at higher temperatures, which is to be expected.
+  ### Fits a linear model to average air preference at each velocity. 
+  ### Checks if on average, people want less air movement at higher velocities, which is to be expected.
   
-  num_temp <- length(unique(df$`Air temperature (°F)`))
+  num_temp <- length(unique(df$`Air velocity (m/s)`))
   
   #Condition to be able to fit a linear model. Also check if there are more than 6 unique temperatures. 
   #If there are less than 6, we can use thermal sensation values instead. 
-  if(num_temp > 6 && all(is.na(df$`Air movement preference`)) == FALSE){
+  if(all(is.na(df$`Air velocity (m/s)`)) == FALSE && all(is.na(df$`Air movement preference`)) == FALSE){
     
     #Take average air preference by mapping less, no change and more to -1, 0, and 1. 
-    sum_pref <- df %>% group_by(`Air temperature (°F)`) %>%
+    sum_pref <- df %>% group_by(`Air velocity (m/s)`) %>%
       mutate(num_pref = factor(`Air movement preference`, levels = c("less", "no change", "more"), labels = c(-1, 0, 1))) %>%
       summarise(avg_pref = mean(as.numeric(num_pref), na.rm = T)) 
     
@@ -451,7 +451,7 @@ test_air_preference_R <- function(df){
     model <- lm(Preference ~ Temperature, data = sum_pref )
     coeff <- model$coefficients[2]
     
-    if(coeff > 0){
+    if(coeff < 0){
       
       return(T)
     }else{
@@ -459,23 +459,6 @@ test_air_preference_R <- function(df){
     }
     
     
-  }else if(all(is.na(df$`Thermal sensation` )) == FALSE && all(is.na(df$`Air movement preference`)) == FALSE){
-    
-    sum_pref <- df %>% group_by(round(`Thermal sensation`)) %>%
-      mutate(num_pref = factor(`Air movement preference`, levels = c("less", "no change", "more"), labels = c(-1, 0, 1))) %>%
-      summarise(avg_pref = mean(as.numeric(num_pref), na.rm = T)) 
-    
-    names(sum_pref) <- c("Sensation", "Preference")
-    
-    model <- lm(Preference ~ Sensation, data = sum_pref) 
-    coeff <- model$coefficients[2]
-    
-    if(coeff > 0){
-      return(T)
-    }else{
-      
-      return(F)
-    }
     
     
   }else{
