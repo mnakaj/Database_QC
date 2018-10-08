@@ -283,15 +283,21 @@ thermal_sensation_R <- function(df){
   ### Test reasonability of thermal sensation votes. 
   ### Takes linear relationship between sensation and tempearture to determine reasonability.
   
+  #rename variable names. Shiny and dplyr combination does not like spaces or symbols in names. 
+  #index 32 for temperature in Fahrenheit
+  #index 16 for thermal sensation 
+  
+  names(df) <- as.character(1:length(names(df)))
+  
   #take the average sensation at each air temperature 
   avg <- df %>% 
-    group_by(`Air temperature (°C)`) %>% 
-    summarise(averagetemp = mean(`Thermal sensation`, na.rm = T)) %>%
+    group_by(`32`) %>% 
+    summarise(averagetemp = mean(`16`, na.rm = T)) %>%
     as.data.frame
-  
+  names(avg) <- c("temp", "sensation")
   #condition for linear model to be fit. Need columns to not be all NA values.
-  if(length(avg$`Air temperature (°C)`) > 1 && all(is.na(avg$averagetemp)) == FALSE && all(is.na(avg$`Air temperature (°C)`) == FALSE)){
-    fit <- lm(averagetemp~`Air temperature (°C)`, data = avg)
+  if(length(avg$`temp`) > 1 && all(is.na(avg$temp)) == FALSE && all(is.na(avg$`sensation`) == FALSE)){
+    fit <- lm(sensation~temp, data = avg)
     #want slope to be positive. As temperature increases, thermal sensation value should increase. 
     if (fit$coefficients[2]>0){
       
@@ -313,7 +319,7 @@ test_thermal_acceptibility_R <- function(df){
   ### with thermal sensation. 
   
   #count the number of votes as acceptable or unacceptable for each thermal sensation 
-  accept <- count(df, vars = `Thermal sensation`, wt_var = `Thermal acceptability`)
+  accept <- count(df, vars = `Thermal sensation`, wt_var = `Thermal sensation acceptability`)
   
   #filter to a dataframe that has votes for acceptable
   accept_1 <- accept %>% 
@@ -429,14 +435,14 @@ test_air_preference_R <- function(df){
   ### Fits a linear model to average air preference at each temperature. 
   ### Checks if on average, people want more air movement at higher temperatures, which is to be expected.
   
-  num_temp <- length(unique(df$`Air temperature (°C)`))
+  num_temp <- length(unique(df$`Air temperature (°F)`))
   
   #Condition to be able to fit a linear model. Also check if there are more than 6 unique temperatures. 
   #If there are less than 6, we can use thermal sensation values instead. 
   if(num_temp > 6 && all(is.na(df$`Air movement preference`)) == FALSE){
     
     #Take average air preference by mapping less, no change and more to -1, 0, and 1. 
-    sum_pref <- df %>% group_by(`Air temperature (°C)`) %>%
+    sum_pref <- df %>% group_by(`Air temperature (°F)`) %>%
       mutate(num_pref = factor(`Air movement preference`, levels = c("less", "no change", "more"), labels = c(-1, 0, 1))) %>%
       summarise(avg_pref = mean(as.numeric(num_pref), na.rm = T)) 
     
