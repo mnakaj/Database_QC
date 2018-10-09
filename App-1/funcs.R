@@ -84,7 +84,7 @@ check_season <- function(df){
 
 check_koppen <- function(df){
   #climate classifications from Google and documented in a csv file 
-  
+  climate_names <- read.csv("./Data/kfc_climates.csv", header = TRUE)
   codes <- factor(df$`Koppen climate classification`, levels = levels(climate_names$Code))
   index <- which(is.na(codes))
   if (length(index)>0) {
@@ -103,7 +103,7 @@ check_koppen <- function(df){
 
 check_climate <- function(df){
   #climate classifications from Google and documented in a csv file 
-  
+  climate_names <- read.csv("./Data/kfc_climates.csv", header = TRUE)
   names <- factor(df$`Climate`, levels = levels(climate_names$`Climate Name`))
   index <- which(is.na(names))
   if (length(index)>0) {

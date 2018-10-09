@@ -5,7 +5,6 @@ library(dplyr)
 source("funcs.R")
 #csv file with Koppen climate names and codes
 climate_names <- read.csv("./Data/kfc_climates.csv", header = TRUE)
-
 NUM_PAGES <- 2
 
 # Define UI for data upload app ----
@@ -395,7 +394,7 @@ server <- function(input, output) {
     ggplot(avgtemp, aes(x =`32`, y = averagetemp)) + geom_point() + 
       ylab("Average thermal sensation at recorded temperatures") + ggtitle("Thermal sensation vs. Temperature") + 
       xlab("Temperature (F)") +
-      geom_smooth(method = "lm")
+      geom_smooth(method = "lm") 
     
   })
   
@@ -443,6 +442,69 @@ server <- function(input, output) {
     
   })
   
+  output$T_comfort_g <- renderPlot({
+    
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
+    names(df1)[1] <- "Index"
+    
+    df <- subset(df1, !(is.na(`Thermal comfort`)))
+    ggplot(df, aes(x = round(`Thermal sensation`), y = rep(1, times = nrow(df)))) + 
+      #geom_point()
+      geom_bar(aes(fill =  factor(cut(as.numeric(`Thermal comfort`), breaks = c(0,3.5, 6)))), position = "fill", stat = 'identity') + 
+      xlab("Thermal sensation") + 
+      ylab("Proportion Thermal comfort") + 
+      scale_fill_discrete(name = "Key Thermal Comfort") 
+    
+    
+  })
+  
+  
+  
+  output$T_preference <- renderText({
+    
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
+    names(df1)[1] <- "Index"
+    
+    check <- test_thermal_preference_R(df1)
+    
+    if(is.na(check)){
+      return("Thermal preference: No applicable reasonability test.")
+    }else if(check == F){
+      return("Thermal preference: Study did not pass reasonability test. Please check encoding.")
+    }else{
+      return("Thermal preference: Study passes reasonability test.")
+    }
+    
+  })
+    
+    output$T_preference_g <- renderPlot({
+      
+      req(input$file1)
+      
+      df1 <- read.csv(input$file1$datapath, sep = ",",
+                      header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
+      names(df1)[1] <- "Index"
+      
+      df <- subset(df1, !(is.na(`Thermal preference`)))
+      
+      ggplot(df, aes(x = round(`Thermal sensation`), y = rep(1, times = nrow(df)))) + 
+        geom_bar(aes(fill = factor(`Thermal preference`, levels = c("warmer", "no change", "cooler"))), position = "fill", stat = "identity") + 
+        xlab("Rounded Thermal Sensation") + 
+        ylab("Proportion - Thermal Preference") + 
+        scale_fill_discrete(name = "Thermal preference legend") 
+      
+      
+    })
+    
+    
+ 
+  
   output$A_preference <- renderText({
     req(input$file1)
     
@@ -451,6 +513,165 @@ server <- function(input, output) {
     names(df1)[1] <- "Index"
     
     check <- test_air_preference_R(df1)
+    
+    if(is.na(check)){
+      return("Air movement preference: No applicable reasonability test.")
+    }else if(check == F){
+      return("Air movement preference: Study did not pass reasonability test. Please check encoding.")
+    }else{
+      return("Air movement preference: Study passes reasonability test.")
+    }
+    
+  })
+  
+  output$A_preference_g <- renderPlot({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
+    names(df1)[1] <- "Index"
+    
+    df<- subset(df1, !is.na(`Air movement preference`))
+    
+    num_pref <- factor(df$`Air movement preference`, levels = c("less", "no change", "more"), labels = c(-1, 0, 1))
+    
+    test2_rev <- data.frame(as.numeric(as.character(num_pref)), df$`Air velocity (m/s)`, df$`Air temperature (°F)`)
+    names(test2_rev) <- c("num_pref", "velocity", "temperature")
+    
+    sums <- test2_rev %>% group_by(temperature) %>%
+      summarise(mean = mean(num_pref, na.rm = T))
+    
+    sums %>% ggplot(aes(x=temperature, y = mean)) + geom_point() + geom_smooth(method = 'lm') + 
+      ylab("Mean Air Movement Preference") + 
+      xlab("Air temperature (F)") + 
+      ggtitle("Example expected air movement preference vs. temperature")
+    
+  })
+  
+  output$A_acceptability <- renderText({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
+    names(df1)[1] <- "Index"
+    
+    check <- test_air_acceptibility_R(df1)
+    
+    if(is.na(check)){
+      return("Air movement acceptability: No applicable reasonability test.")
+    }else if(check == F){
+      return("Air movement acceptability: Study did not pass reasonability test. Please check encoding.")
+    }else{
+      return("Air movement acceptability: Study passes reasonability test.")
+    }
+    
+  })
+  
+  output$A_acceptability_g <- renderPlot({
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
+    names(df1)[1] <- "Index"
+    
+    df<- subset(df1, !is.na(`Air movement acceptability`))
+    if(nrow(df) == 0){
+      return(NULL)
+    }
+    ggplot(df, aes(x = factor(`Air movement preference`, levels = c("less", "no change", "more")), y = rep(1, times = nrow(df)))) + 
+      geom_bar(aes(fill = factor(round((`Air movement acceptability`)))), stat = 'identity', position = 'fill') + 
+      xlab("Air movement preference") + 
+      ylab("Air movement acceptability proportion") + 
+      scale_fill_discrete(name = "Acceptability") + 
+      ggtitle("Expected Air Movement Acceptability") 
+    
+  })
+  
+  output$H_sensation <- renderText({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
+    names(df1)[1] <- "Index"
+    
+    check <- test_humidity_sensation_R(df1)
+    
+    if(is.na(check)){
+      return("Humidity Sensation: No applicable reasonability test.")
+    }else if(check == F){
+      return("Humidity Sensation: Study did not pass reasonability test. Please check encoding.")
+    }else{
+      return("Humidity Sensation: Study passes reasonability test.")
+    }
+    
+  })
+  
+  output$H_sensation_g <- renderPlot({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
+    names(df1)[1] <- "Index"
+    
+    df <- subset(df1, !(is.na(`Humidity sensation`)))
+    
+    if(nrow(df) == 0){
+      return(NULL)
+    }
+    
+    avg_sensation <- df %>% 
+      mutate(rounded_humidity = round(`Relative humidity (%)`)) %>%
+      group_by(rounded_humidity) %>%
+      filter(!is.na(`Humidity sensation`)) %>% 
+      summarise(sensation = mean(`Humidity sensation`))
+    
+    ggplot(avg_sensation, aes(x= rounded_humidity, y = sensation )) + geom_point() + 
+      geom_smooth(method = 'lm') + 
+      xlab("Rounded humidity") + 
+      ylab("Humidity sensation") + 
+      ggtitle("Expected humidity sensation vs. humidity")
+    
+  })
+  
+  output$H_preference <- renderText({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
+    names(df1)[1] <- "Index"
+    
+    check <- test_humidity_preference_R(df1)
+    
+    if(is.na(check)){
+      return("Humidity Preference: No applicable reasonability test.")
+    }else if(check == F){
+      return("Humidity Preference: Study did not pass reasonability test. Please check encoding.")
+    }else{
+      return("Humidity Preference: Study passes reasonability test.")
+    }
+    
+  })
+  
+  output$H_preference_g <- renderPlot({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
+    names(df1)[1] <- "Index"
+    
+    df <- subset(df1, !(is.na(`Humidity preference`)))
+    
+    if(nrow(df) == 0){
+      return(NULL)
+    }
+    ggplot(df, aes(x = `Humidity sensation`, y = rep(1, times = nrow(df)))) + 
+      geom_bar(aes(fill = factor(`Humidity preference`, levels = c("drier", "no change", "more humid"))), stat = 'identity', position = 'fill') + 
+      xlab("Humidity sensation") + 
+      ylab("Humidity preference proportion") + 
+      scale_fill_discrete(name = "Preference") + 
+      ggtitle("Example Humidity Sensation")
+    
+    
+    
     
   })
 }
