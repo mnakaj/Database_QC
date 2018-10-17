@@ -1,0 +1,12 @@
+name: submission
+title: Submission
+username:
+account: databaseqc
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 483520
+bundleId: 1632622
+url: https://databaseqc.shinyapps.io/submission/
+when: 1539111943.65684
+asMultiple: FALSE
+asStatic: FALSE
