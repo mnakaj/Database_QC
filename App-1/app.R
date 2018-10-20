@@ -115,8 +115,13 @@ ui <- fluidPage(
                               tableOutput("vm_fpm"),
                               tableOutput("vl_ms"),
                               tableOutput("vl_fpm"))), 
-                  tabPanel("Calculated Indices", fluidRow()),
-                  tabPanel("Environmental Control"))
+                  tabPanel("Calculated Indices", fluidRow(tableOutput("PMV"),
+                                                          tableOutput("PPD"))),
+                  tabPanel("Environmental Control", fluidRow(tableOutput("Blind"), 
+                              tableOutput("Fan"), 
+                              tableOutput("Window"),
+                              tableOutput("Door"),
+                              tableOutput("Heater"))))
                   
       
       
@@ -1072,6 +1077,710 @@ server <- function(input, output) {
     
     if(check == TRUE){
       message <- data.frame(c("Tg_h (°F) : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$Outdoor_F <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    temps <- df1$`Outdoor monthly air temperature (°F)`
+    
+    if(all(is.na(temps)) == T){
+      message <- data.frame(c("Outdoor monthly air temperature (°F) : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_temp_R(temps, -22, 140)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Outdoor monthly air temperature (°F) : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$Outdoor_C <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    temps <- df1$`Outdoor monthly air temperature (°C)`
+    
+    if(all(is.na(temps)) == T){
+      message <- data.frame(c("Outdoor monthly air temperature (°C) : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_temp_R(temps, -30, 60)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Outdoor monthly air temperature (°C) : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$Oper_temp_F <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    temps <- df1$`Operative temperature (°F)`
+    
+    if(all(is.na(temps)) == T){
+      message <- data.frame(c("Operative temperature (°F) : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_temp_R(temps, 0, 120)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Operative temperature (°F) : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  
+  output$Oper_temp_C <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    temps <- df1$`Operative temperature (°C)`
+    
+    if(all(is.na(temps)) == T){
+      message <- data.frame(c("Operative temperature (°C) : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_temp_R(temps, -7, 50)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Operative temperature (°C) : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  output$Rad_temp_F <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    temps <- df1$`Radiant temperature (°F)`
+    
+    if(all(is.na(temps)) == T){
+      message <- data.frame(c("Radiant temperature (°F) : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_temp_R(temps, 0, 120)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Radiant temperature (°F) : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  
+  output$Rad_temp_C <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    temps <- df1$`Radiant temperature (°C)`
+    
+    if(all(is.na(temps)) == T){
+      message <- data.frame(c("Radiant temperature (°C) : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_temp_R(temps, -7, 50)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Radiant temperature (°C) : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$Globe_temp_F <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    temps <- df1$`Globe temperature (°F)`
+    
+    if(all(is.na(temps)) == T){
+      message <- data.frame(c("Globe temperature (°F) : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_temp_R(temps, 0, 120)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Globe temperature (°F) : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  
+  output$Globe_temp_C <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    temps <- df1$`Globe temperature (°C)`
+    
+    if(all(is.na(temps)) == T){
+      message <- data.frame(c("Globe temperature (°C) : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_temp_R(temps, -7, 50)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Globe temperature (°C) : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$Clo <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    clo <- df1$`Clo`
+    
+    if(all(is.na(clo)) == T){
+      message <- data.frame(c("Clo : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_clo_R(df1)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Clo : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$Met <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    met <- df1$`Met`
+    
+    if(all(is.na(met)) == T){
+      message <- data.frame(c("Met : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_met_R(met)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Met : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$act_10 <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    met <- df1$`activity_10`
+    
+    if(all(is.na(met)) == T){
+      message <- data.frame(c("activity_10 : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_met_R(met)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("activity_10 : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$act_20 <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    met <- df1$`activity_20`
+    
+    if(all(is.na(met)) == T){
+      message <- data.frame(c("activity_20 : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_met_R(met)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("activity_20 : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$act_30 <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    met <- df1$`activity_30`
+    
+    if(all(is.na(met)) == T){
+      message <- data.frame(c("activity_30 : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_met_R(met)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("activity_30 : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$act_60 <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    met <- df1$`activity_60`
+    
+    if(all(is.na(met)) == T){
+      message <- data.frame(c("activity_60 : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_met_R(met)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("activity_60 : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$air_vel_ms <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    vel <- df1$`Air velocity (m/s)`
+    
+    if(all(is.na(vel)) == T){
+      message <- data.frame(c("Air velocity (m/s) : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_velocity(vel, 0, 5)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Air velocity (m/s) : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$air_vel_fpm <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    vel <- df1$`Air velocity (fpm)`
+    
+    if(all(is.na(vel)) == T){
+      message <- data.frame(c("Air velocity (fpm) : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_velocity(vel, 0, 985)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Air velocity (fpm) : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$vh_ms <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    vel <- df1$`Velocity_h (m/s)`
+    
+    if(all(is.na(vel)) == T){
+      message <- data.frame(c("Velocity_h (m/s) : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_velocity(vel, 0, 5)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Velocity_h (m/s) : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$vh_fpm <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    vel <- df1$`Velocity_h (fpm)`
+    
+    if(all(is.na(vel)) == T){
+      message <- data.frame(c("Velocity_h (fpm) : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_velocity(vel, 0, 985)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Velocity_h (fpm) : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$vm_ms <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    vel <- df1$`Velocity_m (m/s)`
+    
+    if(all(is.na(vel)) == T){
+      message <- data.frame(c("Velocity_m (m/s) : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_velocity(vel, 0, 5)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Velocity_m (m/s) : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$vm_fpm <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    vel <- df1$`Velocity_m (fpm)`
+    
+    if(all(is.na(vel)) == T){
+      message <- data.frame(c("Velocity_m (fpm) : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_velocity(vel, 0, 985)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Velocity_m (fpm) : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$vl_ms <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    vel <- df1$`Velocity_l (m/s)`
+    
+    if(all(is.na(vel)) == T){
+      message <- data.frame(c("Velocity_l (m/s) : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_velocity(vel, 0, 5)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Velocity_l (m/s) : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$vl_fpm <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    vel <- df1$`Velocity_l (fpm)`
+    
+    if(all(is.na(vel)) == T){
+      message <- data.frame(c("Velocity_l (fpm) : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_velocity(vel, 0, 985)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Velocity_l (fpm) : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$Blind <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    environ <- df1$`Blind (curtain)`
+    
+    if(all(is.na(environ)) == T){
+      message <- data.frame(c("Blind (curtain) : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_environ_control(environ)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Blind (curtain) : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$Fan <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    environ <- df1$`Fan`
+    
+    if(all(is.na(environ)) == T){
+      message <- data.frame(c("Fan : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_environ_control(environ)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Fan : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$Window <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    environ <- df1$`Window`
+    
+    if(all(is.na(environ)) == T){
+      message <- data.frame(c("Window : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_environ_control(environ)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Window : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$Heater <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    environ <- df1$`Heater`
+    
+    if(all(is.na(environ)) == T){
+      message <- data.frame(c("Heater : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_environ_control(environ)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Heater : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
+  output$Door <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    environ <- df1$`Door`
+    
+    if(all(is.na(environ)) == T){
+      message <- data.frame(c("Door : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_environ_control(environ)
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Door : passed"))
       names(message) <- c("")
       return(message)
     }else{
