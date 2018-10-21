@@ -18,6 +18,15 @@ ui <- fluidPage(
     
     # Sidebar panel for inputs ----
     sidebarPanel(
+      p("In order to check data submission: "),
+      tags$ol(
+        tags$li("Submit csv file for data submission below"), 
+        tags$li("Use tabs to the right to check formatting and reasonability results"),
+        tags$li("If there are any formatting or reasonability errors found, please check your data and re-submit.")
+      ),
+      
+      
+      tags$hr(),
       
       # Input: Select a file ----
       fileInput("file1", "Choose CSV File",
@@ -34,7 +43,11 @@ ui <- fluidPage(
       radioButtons("disp", "Display",
                    choices = c(Head = "head",
                                All = "all"),
-                   selected = "head")
+                   selected = "head"),
+      
+      em("Note:"),
+      p("If there is any trouble with symbols not being found, (ie. °C or % etc), please save csv file with UTF-8 encoding. This can 
+        easily be done in Excel by going to File --> Save As --> File Format --> CSV UTF-8.")
       
     ),
     
@@ -44,7 +57,9 @@ ui <- fluidPage(
       
       tabsetPanel(type = "tabs",
                   tabPanel("Submitted Data", tableOutput("contents")),
-                  tabPanel("Basic Identifiers", fluidRow(tableOutput("Publication"),
+                  tabPanel("Basic Identifiers", h3("Formatting checks for Basic Identifiers"),
+                           p("If there are formatting errors, errors will be listed in a table. Please be patient as functions load."),
+                          fluidRow(tableOutput("Publication"),
                           tableOutput("Contributor"), 
                            tableOutput("Year"), 
                            tableOutput("Season"),
@@ -56,29 +71,44 @@ ui <- fluidPage(
                            tableOutput("Cooling"), 
                            tableOutput("CoolingMM"), 
                            tableOutput("Heating"))), 
-                  tabPanel("Subjects' Information", fluidRow(tableOutput("Age"),
+                  tabPanel("Subjects' Information", h3("Formatting checks for Subjects' Information"), fluidRow(tableOutput("Age"),
                              tableOutput("Sex"), 
                              tableOutput("Weight"),
                              tableOutput("Height")
                              
                            )), 
-                  tabPanel("Subjective Comfort Data", fluidRow(textOutput("T_sensation"),
+                  tabPanel("Subjective Comfort Data", fluidRow(h3("Formatting and resonability checks for Comfort Data"), 
+                              p("Below we show results for reasonability test on data. This is to quickly check for typos and correct 
+                                encodings of data. Plots are shown regardless of passing or not passing reasonability tests."),  
+                              h4("Thermal comfort data"),
+                              strong(em("Thermal sensation")),
+                              textOutput("T_sensation"),
                               plotOutput("T_sensation_g"),
+                              strong(em("Thermal acceptability")),
                               textOutput("T_acceptability"),
                               plotOutput("T_acceptability_g"),
+                              strong(em("Thermal preference")),
                               textOutput("T_preference"),
                               plotOutput("T_preference_g"),
+                              strong(em("Thermal comfort")),
                               textOutput("T_comfort"),
                               plotOutput("T_comfort_g"),
+                              h4("Air movement comfort data"),
+                              strong(em("Air movement preference")),
                               textOutput("A_preference"),
                               plotOutput("A_preference_g"),
+                              strong(em("Air movement acceptability")),
                               textOutput("A_acceptability"),
                               plotOutput("A_acceptability_g"),
+                              h4("Humidity Comfort Data"),
+                              strong(em("Humidity sensation")),
                               textOutput("H_sensation"),
                               plotOutput("H_sensation_g"),
+                              strong(em("Humidity preference")),
                               textOutput("H_preference"),
                               plotOutput("H_preference_g"))), 
-                  tabPanel("Instrumented Measurements", fluidRow(tableOutput("Air_temp_C"),
+                  tabPanel("Instrumented Measurements", h3("Formatting checks for Instrumented Measurements"),
+                           fluidRow(h4("Temperature"), tableOutput("Air_temp_C"),
                               tableOutput("Air_temp_F"),
                               tableOutput("Ta_h_C"),
                               tableOutput("Ta_h_F"),
@@ -100,13 +130,17 @@ ui <- fluidPage(
                               tableOutput("Tg_l_F"),
                               tableOutput("Outdoor_C"),
                               tableOutput("Outdoor_F"),
+                              h4("Humidity"),
+                              tableOutput("Relative_humidity"),
+                              h4("Clo"),
                               tableOutput("Clo"),
+                              h4("Metabolic Rate"),
                               tableOutput("Met"),
                               tableOutput("act_10"),
                               tableOutput("act_20"),
                               tableOutput("act_30"),
                               tableOutput("act_60"), 
-                              tableOutput("rel_hum"),
+                              h4("Air Velocity"),
                               tableOutput("air_vel_ms"),
                               tableOutput("air_vel_fpm"),
                               tableOutput("vh_ms"),
@@ -115,9 +149,9 @@ ui <- fluidPage(
                               tableOutput("vm_fpm"),
                               tableOutput("vl_ms"),
                               tableOutput("vl_fpm"))), 
-                  tabPanel("Calculated Indices", fluidRow(tableOutput("PMV"),
+                  tabPanel("Calculated Indices", h3("Formatting checks for Calculated Indices"), fluidRow(tableOutput("PMV"),
                                                           tableOutput("PPD"))),
-                  tabPanel("Environmental Control", fluidRow(tableOutput("Blind"), 
+                  tabPanel("Environmental Control",h3("Formatting checks for Environmental Control Variables"), fluidRow(tableOutput("Blind"), 
                               tableOutput("Fan"), 
                               tableOutput("Window"),
                               tableOutput("Door"),
@@ -1294,6 +1328,32 @@ server <- function(input, output) {
     }
   })
   
+  output$Relative_humidity <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    col <- df1$`Relative humidity (%)`
+    
+    if(all(is.na(col)) == T){
+      message <- data.frame(c("Relative Humidity (%) : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_range_R(col, 0, 100, "Relative Humidity (%)")
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Relative Humidity (%) : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
+  
   output$Clo <- renderTable({
     req(input$file1)
     
@@ -1788,7 +1848,57 @@ server <- function(input, output) {
     }
   })
   
+  output$PMV <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    col <- df1$`PMV`
+    
+    if(all(is.na(col)) == T){
+      message <- data.frame(c("PMV : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_range_R(col, -3, 3, "PMV")
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("PMV : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
   
+  output$PPD <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    col <- df1$`PPD`
+    
+    if(all(is.na(col)) == T){
+      message <- data.frame(c("PPD : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_range_R(col, 0, 100, "PPD")
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("PPD : passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+  })
   
 }
 

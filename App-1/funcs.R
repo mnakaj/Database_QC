@@ -592,12 +592,51 @@ test_humidity_preference_R <- function(df){
   }
 }
 
-### PMV
-
-### PPD
 
 ###### Note: only need one function for temperature, clo, met, velocity, weight, height age, etc. 
 ############ Make a range check function. Then one function for blind, fan, curtain, heater etc. 
+
+### Use for checking PMV, PPD, %Humidity
+
+check_range_R <- function(col, min, max, name = ""){
+  #want to check that temperatures are all integers and fall within a reasonable range
+  #enter the column to be checked instead of the whole data frame 
+  
+  
+  ## First check for any typos of non-numeric values
+  col1 <- as.character(col)
+  index_alpha <- c()
+  ## Checks for any typos that are not digits (also period for decimal points)
+  col_alpha <- grepl("[^0-9|\\.]", col1)
+  if (length(which(col_alpha)) > 0){
+    index_alpha <- which(col_alpha)
+    
+  }
+  
+  ## Check range
+  col1 <- as.numeric(col)
+  
+  under <- ifelse(col1 < min, TRUE, FALSE)
+  over <- ifelse(col1 > max, TRUE, FALSE)
+  
+  index_range <- c(which(under), which(over))
+  
+  index <- sort(unique(c(index_alpha, index_range)))
+  
+  
+  if (length(index) > 0){
+    
+    unreason_col <- col[index]
+    new_df <- data.frame(index, unreason_col)
+    names(new_df) <- c("Index", name)
+    return(new_df)
+  } else{
+    return(TRUE)
+  }
+  
+  
+}
+
 
 ### Temperatures
 
@@ -605,11 +644,22 @@ check_temp_R <- function(temperatures, min, max){
   #want to check that temperatures are all integers and fall within a reasonable range
   #enter the column to be checked instead of the whole data frame 
   
-  under <- ifelse(temperatures < min, TRUE, FALSE)
-  over <- ifelse(temperatures > max, TRUE, FALSE)
+  temperatures1 <- as.character(temperatures)
+  index_alpha <- c()
+  temp_grep <- grepl("[^0-9\\.]", temperatures1)
+  if (length(which(temp_grep)) > 0){
+    index_alpha <- which(temp_grep)
+    
+  }
+
+  temperatures1 <- as.numeric(temperatures)
+  under <- ifelse(temperatures1 < min, TRUE, FALSE)
+  over <- ifelse(temperatures1 > max, TRUE, FALSE)
   
-  index <- c(which(under), which(over))
+  index_range <- c(which(under), which(over))
   
+  
+  index <- unique(c(index_alpha, index_range))
   if (length(index) > 0){
     
     unreason_temp <- temperatures[index]
@@ -743,6 +793,8 @@ check_height <- function(df){
   }
   
 }
+
+
 
 
 
