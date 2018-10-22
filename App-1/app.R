@@ -84,29 +84,37 @@ ui <- fluidPage(
                               strong(em("Thermal sensation")),
                               textOutput("T_sensation"),
                               plotOutput("T_sensation_g"),
+                              tableOutput("T_sensation_f"),
                               strong(em("Thermal acceptability")),
                               textOutput("T_acceptability"),
                               plotOutput("T_acceptability_g"),
+                              tableOutput("T_acceptability_f"),
                               strong(em("Thermal preference")),
                               textOutput("T_preference"),
                               plotOutput("T_preference_g"),
+                              tableOutput("T_preference_f"),
                               strong(em("Thermal comfort")),
                               textOutput("T_comfort"),
                               plotOutput("T_comfort_g"),
+                              tableOutput("T_comfort_f"),
                               h4("Air movement comfort data"),
                               strong(em("Air movement preference")),
                               textOutput("A_preference"),
                               plotOutput("A_preference_g"),
+                              tableOutput("A_preference_f"),
                               strong(em("Air movement acceptability")),
                               textOutput("A_acceptability"),
                               plotOutput("A_acceptability_g"),
+                              tableOutput("A_acceptability_f"),
                               h4("Humidity Comfort Data"),
                               strong(em("Humidity sensation")),
                               textOutput("H_sensation"),
                               plotOutput("H_sensation_g"),
+                              tableOutput("H_sensation_f"),
                               strong(em("Humidity preference")),
                               textOutput("H_preference"),
-                              plotOutput("H_preference_g"))), 
+                              plotOutput("H_preference_g"),
+                              tableOutput("H_preference_f"))), 
                   tabPanel("Instrumented Measurements", h3("Formatting checks for Instrumented Measurements"),
                            fluidRow(h4("Temperature"), tableOutput("Air_temp_C"),
                               tableOutput("Air_temp_F"),
@@ -197,14 +205,18 @@ server <- function(input, output) {
     df1 <- read.csv(input$file1$datapath, sep = ",",
                     header = TRUE, stringsAsFactors = FALSE )
     
-    cont <- check_contributor(df1)
+    if(all(is.na(df1$`Data contributor`)) == T){
+      na_message(df1$`Data contributor`, "Data Contributor")
+    }
     
-    if(cont == TRUE){
-      message <- data.frame(c("Contributor: passed!"))
+    check <- check_contributor(df1)
+    
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Contributor: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(cont)
     }
     
     
@@ -219,14 +231,18 @@ server <- function(input, output) {
     df1 <- read.csv(input$file1$datapath, sep = ",",
                     header = TRUE, stringsAsFactors = FALSE )
     
-    yr <- check_year(df1)
+    if(all(is.na(df1$`Year`)) == T){
+      na_message(df1$`Year`, "Year")
+    }
     
-    if(yr == TRUE){
-      message <- data.frame(c("Year: passed!"))
+    check <- check_year(df1)
+    
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Year: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(yr)
     }
   })
   
@@ -236,14 +252,18 @@ server <- function(input, output) {
     df1 <- read.csv(input$file1$datapath, sep = ",",
                     header = TRUE, stringsAsFactors = FALSE, check.names = FALSE)
     
+    if(all(is.na(df1$`Season`)) == T){
+      na_message(df1$`Season`, "Season")
+    }
+    
     check <- check_season(df1)
     
-    if(check == TRUE){
-      message <- data.frame(c("Season: passed!"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Season: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
     
@@ -253,14 +273,18 @@ server <- function(input, output) {
     df1 <- read.csv(input$file1$datapath, sep = ",",
                     header = TRUE, stringsAsFactors = FALSE )
     
+    if(all(is.na(df1$`Koppen climate classification`)) == T){
+      na_message(df1$`Koppen climate classification`, "Koppen climate classification")
+    }
+    
     check <- check_koppen(df1)
     
-    if(check == TRUE){
-      message <- data.frame(c("Koppen climate classification: passed!"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Koppen: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -269,15 +293,18 @@ server <- function(input, output) {
     
     df1 <- read.csv(input$file1$datapath, sep = ",",
                     header = TRUE, stringsAsFactors = FALSE )
-    
+    col <- df1$`Climate`
+    if(all(is.na(col)) == T){
+      na_message(df1$col, "Climate")
+    }
     check <- check_climate(df1)
     
-    if(check == TRUE){
-      message <- data.frame(c("Climate: passed!"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Climate: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -287,14 +314,19 @@ server <- function(input, output) {
     df1 <- read.csv(input$file1$datapath, sep = ",",
                     header = TRUE, stringsAsFactors = FALSE )
     
+    col <- df1$Country
+    if(all(is.na(col)) == T){
+      na_message(df1$col, "Country")
+    }
+    
     check <- check_country(df1)
     
-    if(check == TRUE){
-      message <- data.frame(c("Country: passed!"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Country: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -304,14 +336,19 @@ server <- function(input, output) {
     df1 <- read.csv(input$file1$datapath, sep = ",",
                     header = TRUE, stringsAsFactors = FALSE )
     
+    col <- df1$`Building Type`
+    if(all(is.na(col)) == T){
+      na_message(df1$col, "Building Type")
+    }
+    
     check <- check_building(df1)
     
-    if(check == TRUE){
-      message <- data.frame(c("Building Type: passed!"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Building Type: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -321,14 +358,19 @@ server <- function(input, output) {
     df1 <- read.csv(input$file1$datapath, sep = ",",
                     header = TRUE, stringsAsFactors = FALSE )
     
+    col <- df1$`Cooling startegy_building level`
+    if(all(is.na(col)) == T){
+      na_message(df1$col, "Cooling Strategy")
+    }
+    
     check <- check_cooling(df1)
     
-    if(check == TRUE){
-      message <- data.frame(c("Cooling Strategy: passed!"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Cooling strategy: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -338,14 +380,19 @@ server <- function(input, output) {
     df1 <- read.csv(input$file1$datapath, sep = ",",
                     header = TRUE, stringsAsFactors = FALSE )
     
+    col <- df1$`Cooling startegy_operation mode for MM buildings`
+    if(all(is.na(col)) == T){
+      na_message(df1$col, "Cooling Strategy with MM")
+    }
+    
     check <- check_cooling_mm(df1)
     
-    if(check == TRUE){
-      message <- data.frame(c("Cooling Strategy with MM: passed!"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Cooling Strategy with MM: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -355,14 +402,19 @@ server <- function(input, output) {
     df1 <- read.csv(input$file1$datapath, sep = ",",
                     header = TRUE, stringsAsFactors = FALSE )
     
+    col <- df1$`Heating strategy_building level`
+    if(all(is.na(col)) == T){
+      na_message(df1$col, "Heating strategy")
+    }
+    
     check <- check_heating(df1)
     
-    if(check == TRUE){
-      message <- data.frame(c("Heating strategy: passed!"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Heating Strategy: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -372,14 +424,19 @@ server <- function(input, output) {
     df1 <- read.csv(input$file1$datapath, sep = ",",
                     header = TRUE, stringsAsFactors = FALSE )
     
+    col <- df1$`Age`
+    if(all(is.na(col)) == T){
+      na_message(df1$col, "Age")
+    }
+    
     check <- check_age(df1)
     
-    if(check == TRUE){
-      message <- data.frame(c("Age: passed!"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Age: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -390,14 +447,19 @@ server <- function(input, output) {
     df1 <- read.csv(input$file1$datapath, sep = ",",
                     header = TRUE, stringsAsFactors = FALSE )
     
+    col <- df1$`Sex`
+    if(all(is.na(col)) == T){
+      na_message(df1$col, "Sex")
+    }
+    
     check <- check_sex(df1)
     
-    if(check == TRUE){
-      message <- data.frame(c("Sex: passed!"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Sex: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -407,14 +469,18 @@ server <- function(input, output) {
     df1 <- read.csv(input$file1$datapath, sep = ",",
                     header = TRUE, stringsAsFactors = FALSE )
     
-    check <- check_weight(df1)
+    col <- df1$`Subject´s weight (kg)`
+    if(all(is.na(col)) == T){
+      na_message(df1$col, "Weight")
+    }
     
-    if(check == TRUE){
-      message <- data.frame(c("Weight: passed!"))
+    check <- check_weight(df1)
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Weight: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -424,18 +490,52 @@ server <- function(input, output) {
     df1 <- read.csv(input$file1$datapath, sep = ",",
                     header = TRUE, stringsAsFactors = FALSE )
     
+    col <- df1$`Subject´s height (cm)`
+    if(all(is.na(col)) == T){
+      na_message(df1$col, "Height")
+    }
+    
     check <- check_height(df1)
     
-    if(check == TRUE){
-      message <- data.frame(c("Height: passed!"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Height: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
-  #Thermal sensation reasonability
+  #Thermal sensation
+  
+  output$T_sensation_f <- renderTable({
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
+    
+    col <- df1$`Thermal sensation`
+    
+    if(all(is.na(col)) == T){
+      message <- data.frame(c("Thermal sensation : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    #check thermal sensation values are between -3 and 3
+    check <- check_range_R(col, -3, 3, "Thermal sensation")
+    
+    
+    
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Thermal sensation formatting: passed"))
+      names(message) <- c("")
+      return(message)
+    }
+      
+    
+  })
+  
   output$T_sensation <- renderText({
     req(input$file1)
     
@@ -443,12 +543,12 @@ server <- function(input, output) {
                     header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
     check <- thermal_sensation_R(df1)
     
-    if(check == T){
-      return("Thermal sensation: Passed")
+    if(is.na(check)){
+      return("Thermal sesnation: No applicable reasonability test.")
     }else if(check == F){
-      return("Please check coding of thermal sensation study.")
+      return("Thermal sensation: Study did not pass reasonability test. Please check encoding.")
     }else{
-      return("No applicable reasonability test.")
+      return("Thermal sensation: Study passes reasonability test.")
     }
     
   })
@@ -458,6 +558,13 @@ server <- function(input, output) {
     
     df1 <- read.csv(input$file1$datapath, sep = ",",
                     header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
+    
+    check <- thermal_sensation_R(df1)
+    
+    if(is.na(check)){
+      return(NULL)
+    }
+    
     df <- subset(df1, !(is.na(`Thermal sensation`)))
     names(df) <- as.character(1:length(names(df)))
     avgtemp <- df %>% group_by(`32`) %>% 
@@ -473,6 +580,33 @@ server <- function(input, output) {
     
   })
   
+  output$T_acceptability_f <- renderTable({
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
+    
+    col <- df1$`Thermal sensation acceptability`
+    
+    if(all(is.na(col)) == T){
+      message <- data.frame(c("Thermal acceptability : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    #thermal acceptability is either 0, 1 or NA
+    check <- check_factor(col, c(0, 1), "Thermal acceptability")
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Thermal acceptability formatting: passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+    
+  })
+  
   output$T_acceptability <- renderText({
     
     req(input$file1)
@@ -483,7 +617,7 @@ server <- function(input, output) {
     check <- test_thermal_acceptibility_R(df1)
     
     if(is.na(check)){
-      return("No applicable reasonability test.")
+      return("Thermal acceptability: No applicable reasonability test.")
     }else if(check == F){
       return("Thermal accepabtility: Study did not pass reasonability test. Please check encoding.")
     }else{
@@ -495,8 +629,42 @@ server <- function(input, output) {
     req(input$file1)
     df1 <- read.csv(input$file1$datapath, sep = ",",
                     header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
+    names(df1)[1] <- "Index"
+    check <- test_thermal_acceptibility_R(df1)
+    if(is.na(check)){
+      return(NULL)
+    }
+    
     ggplot(df1, aes(x =`Air temperature (°F)`)) + geom_bar(aes(fill = factor(`Thermal sensation acceptability`)))
   })
+  
+  output$T_comfort_f <- renderTable({
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
+    
+    col <- df1$`Thermal comfort`
+    
+    if(all(is.na(col)) == T){
+      message <- data.frame(c("Thermal comfort : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    #thermal comfort values are between 1 and 6
+    check <- check_range_R(col, 1, 6, "Thermal comfort")
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Thermal comfort formatting: passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+    
+  })
+  
   
   output$T_comfort <- renderText({
     
@@ -524,7 +692,10 @@ server <- function(input, output) {
     df1 <- read.csv(input$file1$datapath, sep = ",",
                     header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
     names(df1)[1] <- "Index"
-    
+    check <- test_thermal_comfort_R(df1)
+    if(is.na(check)){
+      return(NULL)
+    }
     df <- subset(df1, !(is.na(`Thermal comfort`)))
     ggplot(df, aes(x = round(`Thermal sensation`), y = rep(1, times = nrow(df)))) + 
       #geom_point()
@@ -536,6 +707,33 @@ server <- function(input, output) {
     
   })
   
+  
+  output$T_preference_f <- renderTable({
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
+    
+    col <- df1$`Thermal preference`
+    
+    if(all(is.na(col)) == T){
+      message <- data.frame(c("Thermal preference : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    
+    check <- check_factor(col, c("no change", "cooler", "warmer"), "Thermal preference")
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Thermal preference formatting: passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
+    
+  })
   
   
   output$T_preference <- renderText({
@@ -565,6 +763,10 @@ server <- function(input, output) {
       df1 <- read.csv(input$file1$datapath, sep = ",",
                       header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
       names(df1)[1] <- "Index"
+      check <- test_thermal_preference_R(df1)
+      if(is.na(check)){
+        return(NULL)
+      }
       
       df <- subset(df1, !(is.na(`Thermal preference`)))
       
@@ -578,7 +780,33 @@ server <- function(input, output) {
     })
     
     
- 
+    output$A_preference_f <- renderTable({
+      
+      df1 <- read.csv(input$file1$datapath, sep = ",",
+                      header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
+      
+      col <- df1$`Air movement preference`
+      
+      if(all(is.na(col)) == T){
+        message <- data.frame(c("Air movement preference : All NA"))
+        names(message) <- c("")
+        return(message)
+      }
+      
+      check <- check_factor(col, c("less", "more", "no change"), "Air movement preference")
+      
+      
+      
+      if(check == TRUE){
+        message <- data.frame(c("Air movement preference formatting: passed"))
+        names(message) <- c("")
+        return(message)
+      }else{
+        return(check)
+      }
+      
+    })
+    
   
   output$A_preference <- renderText({
     req(input$file1)
@@ -608,6 +836,10 @@ server <- function(input, output) {
     
     df<- subset(df1, !is.na(`Air movement preference`))
     
+    if(nrow(df) == 0){
+      return(NULL)
+    }
+    
     num_pref <- factor(df$`Air movement preference`, levels = c("less", "no change", "more"), labels = c(-1, 0, 1))
     
     test2_rev <- data.frame(as.numeric(as.character(num_pref)), df$`Air velocity (m/s)`, df$`Air temperature (°F)`)
@@ -620,6 +852,33 @@ server <- function(input, output) {
       ylab("Mean Air Movement Preference") + 
       xlab("Air temperature (F)") + 
       ggtitle("Example expected air movement preference vs. temperature")
+    
+  })
+  
+  output$A_acceptability_f <- renderTable({
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
+    
+    col <- df1$`Air movement acceptability`
+    
+    if(all(is.na(col)) == T){
+      message <- data.frame(c("Air movement acceptability : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    
+    check <- check_factor(col, c(0,1), "Air movement acceptability")
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Air movement acceptability formatting: passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
     
   })
   
@@ -658,6 +917,33 @@ server <- function(input, output) {
       ylab("Air movement acceptability proportion") + 
       scale_fill_discrete(name = "Acceptability") + 
       ggtitle("Expected Air Movement Acceptability") 
+    
+  })
+  
+  output$H_sensation_f <- renderTable({
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
+    
+    col <- df1$`Humidity sensation`
+    
+    if(all(is.na(col)) == T){
+      message <- data.frame(c("Humidity sensation : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    
+    check <- check_range_R(col, -3,3, "Humidity sensation")
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Humidity sensation formatting: passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
     
   })
   
@@ -704,6 +990,33 @@ server <- function(input, output) {
       xlab("Rounded humidity") + 
       ylab("Humidity sensation") + 
       ggtitle("Expected humidity sensation vs. humidity")
+    
+  })
+  
+  output$H_preference_f <- renderTable({
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = FALSE )
+    
+    col <- df1$`Humidity preference`
+    
+    if(all(is.na(col)) == T){
+      message <- data.frame(c("Humidity preference : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    
+    check <- check_factor(col, c("drier", "no change", "more humid"), "Humidity preference")
+    
+    
+    
+    if(check == TRUE){
+      message <- data.frame(c("Humidity preference formatting: passed"))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(check)
+    }
     
   })
   
@@ -1360,14 +1673,14 @@ server <- function(input, output) {
     df1 <- read.csv(input$file1$datapath, sep = ",",
                     header = TRUE, stringsAsFactors = FALSE, check.names = F)
     
-    clo <- df1$`Clo`
+    clo <- df1$Clo
     
     if(all(is.na(clo)) == T){
       message <- data.frame(c("Clo : All NA"))
       names(message) <- c("")
       return(message)
     }
-    check <- check_clo_R(df1)
+    check <- check_range_R(clo, 0, 5, "Clo")
     
     
     
@@ -1393,7 +1706,7 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_met_R(met)
+    check <- check_range_R(met, 0, 10, "Met")
     
     
     
@@ -1419,7 +1732,7 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_met_R(met)
+    check <- check_range_R(met, 0, 10, "activity_10")
     
     
     
@@ -1445,7 +1758,7 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_met_R(met)
+    check <- check_range_R(met, 0, 10, "activity_20")
     
     
     
@@ -1471,7 +1784,7 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_met_R(met)
+    check <- check_range_R(met, 0, 10, "activity_30")
     
     
     
@@ -1497,7 +1810,7 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_met_R(met)
+    check <- check_range_R(met, 0, 10, "activity_60")
     
     
     

@@ -103,7 +103,7 @@ check_koppen <- function(df){
 
 check_climate <- function(df){
   #climate classifications from Google and documented in a csv file 
-  climate_names <- read.csv("./Data/kfc_climates.csv", header = TRUE)
+  climate_names <- read.csv("./Data/kfc_climates.csv", header = TRUE, check.names = F)
   names <- factor(df$`Climate`, levels = levels(climate_names$`Climate Name`))
   index <- which(is.na(names))
   if (length(index)>0) {
@@ -607,7 +607,7 @@ check_range_R <- function(col, min, max, name = ""){
   col1 <- as.character(col)
   index_alpha <- c()
   ## Checks for any typos that are not digits (also period for decimal points)
-  col_alpha <- grepl("[^0-9|\\.]", col1)
+  col_alpha <- grepl("[^0-9|\\.|-]", col1)
   if (length(which(col_alpha)) > 0){
     index_alpha <- which(col_alpha)
     
@@ -826,4 +826,30 @@ check_environ_control <- function(col){
 }
 
 
+### Helper Functions
 
+na_message <- function(col, name){
+    string <- paste(col, ": All NA")
+    message <- data.frame(c(string))
+    names(message) <- c("")
+    return(message)
+}
+
+check_factor <- function(col, factors, name){
+  
+  factored <- factor(col, levels = factors)
+  
+  #checks that NA's have been added due to factorization
+  if (length(which(is.na(factored))) > 0 && length(which(is.na(factored))) >  length(which(is.na(col)))){
+    
+    index1 <- which(is.na(factored))
+    index2 <- which(is.na(col))
+    index <- subset(index1, !(index1 %in% index2))
+    wrong_cols <- col[index]
+    new_df <- data.frame(index, wrong_cols)
+    names(new_df) <- c("Index", name)
+    return(new_df)
+  } else{
+    return(TRUE)
+  }
+}
