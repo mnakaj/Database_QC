@@ -1,4 +1,5 @@
 library(rvest)
+library(RJSONIO)
 
 ##########
 # Function with a _R at the end indicate that they are functions to test reasonability. 
@@ -163,6 +164,65 @@ check_country <- function(df){
   
   
 }
+
+check_city <- function(df){
+  countrycodes <- read.csv("./Data/CountryCodes.csv", header = TRUE, check.names = F, stringsAsFactors = F)
+  #get country code for countries in df to query
+  code <- c()
+  for (country in df$Country){
+    
+    index <- which(countrycodes$CountryName == country)
+    code <- c(code, countrycodes$CountryCode[index])
+   
+    
+  }
+  
+  #create new data frame with city
+  #only need to search distinct cities; make searching faster
+  test_codes <- data.frame(code, df$City) %>% distinct()
+  names(test_codes) <- c("CountryCode", "CityName")
+  
+  #code adapted from https://stackoverflow.com/questions/13905098/how-to-get-the-longitude-and-latitude-coordinates-from-a-city-name-and-country-i
+  
+  nrow <- nrow(test_codes)
+  counter <- 1
+  test_codes$lon[counter] <- 0
+  test_codes$lat[counter] <- 0
+  while (counter <= nrow){
+    CityName <- gsub(' ','%20',test_codes$CityName[counter]) #remove space for URLs
+    CountryCode <- test_codes$CountryCode[counter]
+    url <- paste(
+      "http://nominatim.openstreetmap.org/search?city="
+      , CityName
+      , "&countrycodes="
+      , CountryCode
+      , "&limit=9&format=json"
+      , sep="")
+    x <- fromJSON(url)
+    if(is.vector(x)){
+      test_codes$lon[counter] <- x[[1]]$lon
+      test_codes$lat[counter] <- x[[1]]$lat    
+    }
+    counter <- counter + 1
+    Sys.sleep(1.1) #to comply with website usage guidelines 
+  }
+  
+  index <- which(test_codes$lon == 0 & test_codes$lat == 0)
+  length_wrong <- length(index)
+  
+  if(length_wrong > 0){
+    wrong_cities <- test_codes$CityName[index]
+    
+    wrong_df <- subset(df, df$City %in% wrong_cities)
+    wrong_df <- wrong_df %>% select(City)
+    return(wrong_df)
+    
+  }else{
+    return(T)
+  }
+  
+}
+
 ### Building type
 
 check_building <- function(df){
@@ -640,7 +700,7 @@ check_range_R <- function(col, min, max, name = ""){
 
 ### Temperatures
 
-check_temp_R <- function(temperatures, min, max){
+check_temp_R <- function(temperatures, min, max, name){
   #want to check that temperatures are all integers and fall within a reasonable range
   #enter the column to be checked instead of the whole data frame 
   
@@ -664,7 +724,7 @@ check_temp_R <- function(temperatures, min, max){
     
     unreason_temp <- temperatures[index]
     new_df <- data.frame(index, unreason_temp)
-    names(new_df) <- c("Index", "Temperature")
+    names(new_df) <- c("Index", name)
     return(new_df)
   } else{
     return(TRUE)

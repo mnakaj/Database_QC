@@ -66,6 +66,7 @@ ui <- fluidPage(
                            tableOutput("Koppen"), 
                            tableOutput("Climate"), 
                            tableOutput("Country"), 
+                           em("Note: If country is not correct, city will automatically error."),
                            tableOutput("City"), 
                            tableOutput("BuildingType"), 
                            tableOutput("Cooling"), 
@@ -330,6 +331,29 @@ server <- function(input, output) {
     }
   })
   
+  #note: countries must be correct for cities to work.
+  output$City <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE )
+    
+    col <- df1$City
+    if(all(is.na(col)) == T){
+      na_message(df1$col, "City")
+    }
+    
+    check <- check_city(df1)
+    
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("City: passed"))
+      names(message) <- c("")
+      return(message)
+    }
+  })
+  
   output$BuildingType <- renderTable({
     req(input$file1)
     
@@ -571,7 +595,7 @@ server <- function(input, output) {
       summarise(averagetemp = mean(`16`)) %>% 
       as.data.frame
     
-    print(avgtemp)
+    
     
     ggplot(avgtemp, aes(x =`32`, y = averagetemp)) + geom_point() + 
       ylab("Average thermal sensation at recorded temperatures") + ggtitle("Thermal sensation vs. Temperature") + 
@@ -597,12 +621,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
+    if(is.data.frame(check)){
+      return(check)
+    }else{
       message <- data.frame(c("Thermal acceptability formatting: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
     
   })
@@ -655,12 +679,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
+    if(is.data.frame(check)){
+      return(check)
+    }else{
       message <- data.frame(c("Thermal comfort formatting: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
     
   })
@@ -725,12 +749,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
+    if(is.data.frame(check)){
+      return(check)
+    }else{
       message <- data.frame(c("Thermal preference formatting: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
     
   })
@@ -797,12 +821,12 @@ server <- function(input, output) {
       
       
       
-      if(check == TRUE){
+      if(is.data.frame(check)){
+        return(check)
+      }else{
         message <- data.frame(c("Air movement preference formatting: passed"))
         names(message) <- c("")
         return(message)
-      }else{
-        return(check)
       }
       
     })
@@ -872,12 +896,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
+    if(is.data.frame(check)){
+      return(check)
+    }else{
       message <- data.frame(c("Air movement acceptability formatting: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
     
   })
@@ -937,12 +961,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
+    if(is.data.frame(check)){
+      return(check)
+    }else{
       message <- data.frame(c("Humidity sensation formatting: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
     
   })
@@ -1010,12 +1034,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
+    if(is.data.frame(check)){
+      return(check)
+    }else{
       message <- data.frame(c("Humidity preference formatting: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
     
   })
@@ -1077,16 +1101,17 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_temp_R(temps, -17, 50)
+    check <- check_temp_R(temps, -17, 50, "Air Temperature (°C)")
     
   
     
-    if(check == TRUE){
-      message <- data.frame(c("Air Temperature (°C) : passed"))
+    
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Air Temperature (°C): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1103,16 +1128,16 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_temp_R(temps, 0, 120)
+    check <- check_temp_R(temps, 0, 120, "Air Temperature (°F) ")
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Air Temperature (°F) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Air Temperature (°F): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1129,16 +1154,16 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_temp_R(temps, -17, 50)
+    check <- check_temp_R(temps, -17, 50, "Ta_h (°C)")
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Ta_h (°C) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Ta_h (°C): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1155,16 +1180,15 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_temp_R(temps, 0, 120)
+    check <- check_temp_R(temps, 0, 120, "Ta_h (°F)")
     
     
-    
-    if(check == TRUE){
-      message <- data.frame(c("Ta_h (°F) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Ta_h (°F): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1181,16 +1205,16 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_temp_R(temps, -17, 50)
+    check <- check_temp_R(temps, -17, 50, "Ta_m (°C)")
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Ta_m (°C) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Ta_m (°C): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1207,16 +1231,16 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_temp_R(temps, -17, 50)
+    check <- check_temp_R(temps, -17, 50, "Ta_l (°C)")
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Ta_l (°C) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Ta_l (°C): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1233,16 +1257,16 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_temp_R(temps, 0, 120)
+    check <- check_temp_R(temps, 0, 120, "Ta_m (°F)")
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Ta_m (°F) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Ta_m (°F): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1259,16 +1283,15 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_temp_R(temps, 0, 120)
+    check <- check_temp_R(temps, 0, 120, "Ta_l (°F)")
     
     
-    
-    if(check == TRUE){
-      message <- data.frame(c("Ta_l (°F) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Ta_l (°F): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1287,16 +1310,16 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_temp_R(temps, -17, 50)
+    check <- check_temp_R(temps, -17, 50, "Tg_m (°C)")
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Tg_m (°C) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Tg_m (°C): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1313,16 +1336,16 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_temp_R(temps, -17, 50)
+    check <- check_temp_R(temps, -17, 50, "Tg_l (°C)")
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Tg_l (°C) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Tg_l (°C): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1340,16 +1363,16 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_temp_R(temps, -17, 50)
+    check <- check_temp_R(temps, -17, 50, "Tg_h (°C)")
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Tg_h (°C) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Tg_h (°C): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1366,16 +1389,16 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_temp_R(temps, 0, 120)
+    check <- check_temp_R(temps, 0, 120, "Tg_m (°F)")
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Tg_m (°F) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Tg_m (°F): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1392,16 +1415,16 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_temp_R(temps, 0, 120)
+    check <- check_temp_R(temps, 0, 120, "Tg_l (°F)")
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Tg_l (°F) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Tg_l (°F): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1418,16 +1441,16 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_temp_R(temps, 0, 120)
+    check <- check_temp_R(temps, 0, 120, "Tg_h (°F)")
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Tg_h (°F) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Tg_h (°F): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1444,16 +1467,16 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_temp_R(temps, -22, 140)
+    check <- check_temp_R(temps, -22, 140, "Outdoor monthly air temperature (°F)")
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Outdoor monthly air temperature (°F) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Outdoor Monthly Air Temperature (°F): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1470,16 +1493,16 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_temp_R(temps, -30, 60)
+    check <- check_temp_R(temps, -30, 60, "Outdoor monthly air temperature (°C)")
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Outdoor monthly air temperature (°C) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Outdoor Monthly Air Temperature (°C): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1496,16 +1519,16 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_temp_R(temps, 0, 120)
+    check <- check_temp_R(temps, 0, 120, "Operative Temperature (°F)")
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Operative temperature (°F) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Operative Temperature (°F): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1523,16 +1546,16 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_temp_R(temps, -7, 50)
+    check <- check_temp_R(temps, -7, 50, "Operative Temperature (°C)")
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Operative temperature (°C) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Operative Temperature (°C): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   output$Rad_temp_F <- renderTable({
@@ -1548,16 +1571,16 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_temp_R(temps, 0, 120)
+    check <- check_temp_R(temps, 0, 120, "Radiant temperature (°F)")
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Radiant temperature (°F) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Radiant Temperature (°F): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1575,16 +1598,16 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_temp_R(temps, -7, 50)
+    check <- check_temp_R(temps, -7, 50, "Radiant temperature (°C)")
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Radiant temperature (°C) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Radiant Temperature (°C): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1601,16 +1624,16 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_temp_R(temps, 0, 120)
+    check <- check_temp_R(temps, 0, 120, "Globe temperature (°F)")
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Globe temperature (°F) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Globe Temperature (°F): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1628,16 +1651,16 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_temp_R(temps, -7, 50)
+    check <- check_temp_R(temps, -7, 50, "Globe Temperature (°C)")
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Globe temperature (°C) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Globe Temperature (°C): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1658,12 +1681,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Relative Humidity (%) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Relative Humidity (%): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1684,12 +1707,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Clo : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Clo: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1710,12 +1733,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Met : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Met"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1736,12 +1759,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
+    if(is.data.frame(check)){
+      return(check)
+    }else{
       message <- data.frame(c("activity_10 : passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1762,12 +1785,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("activity_20 : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("activity_20: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1788,12 +1811,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("activity_30 : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("activity_30: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1814,12 +1837,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("activity_60 : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("activity_60: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1840,12 +1863,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Air velocity (m/s) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Air velocity (m/s): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1866,12 +1889,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Air velocity (fpm) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Air velocity (fpm): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1892,12 +1915,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Velocity_h (m/s) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Velocity_h (m/s): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1918,12 +1941,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Velocity_h (fpm) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Velocity_h (fpm): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1944,12 +1967,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Velocity_m (m/s) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Velocity_m (m/s): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1970,12 +1993,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Velocity_m (fpm) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Velocity_m (fpm): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -1996,12 +2019,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Velocity_l (m/s) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Velocity_l (m/s): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -2022,12 +2045,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Velocity_l (fpm) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Velocity_l (fpm): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -2048,12 +2071,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Blind (curtain) : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Blind (curtain): passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -2074,12 +2097,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Fan : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Fan: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -2100,12 +2123,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Window : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Window: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -2126,12 +2149,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Heater : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Heater: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -2152,12 +2175,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("Door : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("Door: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -2178,12 +2201,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("PMV : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("PMV: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
@@ -2204,12 +2227,12 @@ server <- function(input, output) {
     
     
     
-    if(check == TRUE){
-      message <- data.frame(c("PPD : passed"))
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("PPD: passed"))
       names(message) <- c("")
       return(message)
-    }else{
-      return(check)
     }
   })
   
