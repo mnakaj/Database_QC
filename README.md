@@ -10,6 +10,7 @@ By submitting a csv file to the below web address, we can run formatting and rea
 
 - Codes for countries and Koppen climates in this database can be found [here](https://github.com/mnakaj/Database_QC/tree/master/App-1/Data).
 
+- You can use [this](https://github.com/mnakaj/Database_QC/blob/master/publication2.csv) example csv file to see what type of outputs are expected.
 
 ### Notes: 
 To come: 
