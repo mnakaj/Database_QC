@@ -1,6 +1,6 @@
 # Database Quality Check
 
-- Website for submission: [https://databaseqc.shinyapps.io/submission/](https://databaseqc.shinyapps.io/submission/) - Still under construction.
+- Website for submission: [https://databaseqc.shinyapps.io/submission/](https://databaseqc.shinyapps.io/submission/) 
 
 - Document with how tests check reasonability can be found [here](https://github.com/mnakaj/Database_QC/blob/master/Reasonability%20Tests/reasonability_tests.md). 
 
