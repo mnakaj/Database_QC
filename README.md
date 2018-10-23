@@ -11,3 +11,8 @@ By submitting a csv file to the below web address, we can run formatting and rea
 - Codes for countries and Koppen climates in this database can be found [here](https://github.com/mnakaj/Database_QC/tree/master/App-1/Data).
 
 
+### Notes: 
+To come: 
+
+- SET format checking
+- conversion checking between units? 
