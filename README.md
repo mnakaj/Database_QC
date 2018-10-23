@@ -14,5 +14,6 @@ By submitting a csv file to the below web address, we can run formatting and rea
 ### Notes: 
 To come: 
 
+- Air movement preference function has been updated to check against air velocity instead of air temperature. This needs to be changed in the reasonability document.
 - SET format checking
 - conversion checking between units? 
