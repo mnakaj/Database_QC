@@ -2,7 +2,7 @@
 
 By submitting a csv file to the below web address, we can run formatting and reasonability checking functions to make sure data submissions to the database are consistent.
 
-- Website for submission: [https://databaseqc.shinyapps.io/submission/](https://databaseqc.shinyapps.io/submission/) 
+- Website for submission: [https://databaseqc.shinyapps.io/submission/](https://databaseqc.shinyapps.io/submission/) Currently under construction.
 
 - Document with how tests check reasonability can be found [here](https://github.com/mnakaj/Database_QC/blob/master/Reasonability%20Tests/reasonability_tests.md). 
 
