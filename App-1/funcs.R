@@ -324,7 +324,7 @@ check_age <- function(df){
 
 check_sex <- function(df){
   
-  sex <- factor(df$`Sex`, levels = c("Male", "Female"))
+  sex <- factor(df$`Sex`, levels = c("Male", "Female", "Undefined"))
   
   index <- intersect(which(is.na(sex)), which(!is.na(df$`Sex`)))
   if (length(index) > 0){

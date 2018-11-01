@@ -45,9 +45,17 @@ ui <- fluidPage(
                                All = "all"),
                    selected = "head"),
       
+      tags$hr(),
+      
+      strong("To download template csv file for submission, please download below: "),
+      
+      
+      downloadButton("downloadTemp", "Template CSV File"), 
+      
       em("Note:"),
       p("If there is any trouble with symbols not being found, (ie. °C or % etc), please save csv file with UTF-8 encoding. This can 
         easily be done in Excel by going to File --> Save As --> File Format --> CSV UTF-8.")
+      
       
     ),
     
@@ -199,6 +207,14 @@ server <- function(input, output) {
     
   })
   
+  output$downloadTemp <- downloadHandler(
+    
+    filename <- "submission_template.csv",
+    
+    content <- function(file){
+      file.copy("./Data/submission_template.csv", file)
+    }
+  )
   
   output$Contributor <- renderTable({
     req(input$file1)
