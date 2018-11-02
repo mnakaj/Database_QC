@@ -167,7 +167,8 @@ ui <- fluidPage(
                               tableOutput("vl_ms"),
                               tableOutput("vl_fpm"))), 
                   tabPanel("Calculated Indices", h3("Formatting checks for Calculated Indices"), fluidRow(tableOutput("PMV"),
-                                                          tableOutput("PPD"))),
+                                                          tableOutput("PPD"),
+                                                          tableOutput("SET"))),
                   tabPanel("Environmental Control",h3("Formatting checks for Environmental Control Variables"), fluidRow(tableOutput("Blind"), 
                               tableOutput("Fan"), 
                               tableOutput("Window"),
@@ -2247,6 +2248,32 @@ server <- function(input, output) {
       return(check)
     }else{
       message <- data.frame(c("PPD: passed"))
+      names(message) <- c("")
+      return(message)
+    }
+  })
+  
+  output$SET <- renderTable({
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    temps <- df1$`SET`
+    
+    if(all(is.na(temps)) == T){
+      message <- data.frame(c("SET : All NA"))
+      names(message) <- c("")
+      return(message)
+    }
+    check <- check_temp_R(temps, -17, 50, "SET")
+    
+    
+    
+    if(is.data.frame(check)){
+      return(check)
+    }else{
+      message <- data.frame(c("SET: passed"))
       names(message) <- c("")
       return(message)
     }

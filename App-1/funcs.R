@@ -885,6 +885,36 @@ check_environ_control <- function(col){
   
 }
 
+### Check Conversions
+
+##### Farenheit & Celsius, m/s & fpm, PMV & PPD 
+
+check_conversion <- function(col1, col2, mult, const = 0, accuracy, names = c()){
+  ## where conversion whould be col1 = const + mult*col2
+  ## accuracy is how many digits past zero to round to 
+  
+  
+  converted <- mult*col2 + const
+  
+  index <- which(round(col1, digits = accuracy) != round(converted, digits = accuracy))
+  
+  if(length(index) > 0){
+    wrong_col1 <- col1[index]
+    wrong_col2 <- col2[index]
+    
+    new_df <- data.frame(index, wrong_col1, wrong_col2)
+    names(new_df) <- c("Index", names)
+    return(new_df)
+  }else{
+    return(T)
+  }
+  
+  
+  
+  
+  
+}
+
 
 ### Helper Functions
 
