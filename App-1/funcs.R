@@ -131,20 +131,21 @@ check_climate <- function(df){
 check_country <- function(df){
   
   #webscrape countrycodes table 
+  #webscraped table is saved as csv file with ammends to USA and UK
+  # url <- "https://wiki.openstreetmap.org/wiki/Nominatim/Country_Codes"
+  # 
+  # 
+  # countrycodes <- url %>%
+  #   read_html() %>%
+  #   html_nodes(xpath='//*[@id="mw-content-text"]/div/table') %>%
+  #   html_table() 
+  # 
+  # countrycodes <- countrycodes[[1]]
+  # 
+  # countrycodes <- countrycodes[, 1:2]
+  # names(countrycodes) <- c("CountryCode", "CountryName")
   
-  url <- "https://wiki.openstreetmap.org/wiki/Nominatim/Country_Codes"
-  
-  
-  countrycodes <- url %>%
-    read_html() %>%
-    html_nodes(xpath='//*[@id="mw-content-text"]/div/table') %>%
-    html_table() 
-  
-  countrycodes <- countrycodes[[1]]
-  
-  countrycodes <- countrycodes[, 1:2]
-  names(countrycodes) <- c("CountryCode", "CountryName")
-  
+  countrycodes <- read.csv("./Data/CountryCodes.csv", header = TRUE, check.names = F, stringsAsFactors = F)
   
   #countrycodes$CountryCode <- factor(countrycodes$CountryCode)
   countrycodes$CountryName <- factor(countrycodes$CountryName)
@@ -379,14 +380,18 @@ test_thermal_acceptibility_R <- function(df){
   ### with thermal sensation. 
   
   #count the number of votes as acceptable or unacceptable for each thermal sensation 
-  accept <- count(df, vars = `Thermal sensation`, wt_var = `Thermal sensation acceptability`)
+  accept <- count(df, vars = round(`Thermal sensation`), wt_var = `Thermal sensation acceptability`)
   
   #filter to a dataframe that has votes for acceptable
   accept_1 <- accept %>% 
+    group_by(vars) %>%
+    mutate(total = sum(n, na.rm = T)) %>% 
+    mutate(prop = n/total) %>%
     filter(wt_var == 1)
+  
   if(all(is.na(accept_1$vars)) == FALSE && all(is.na(accept_1$n)) == FALSE ){
     #fit a function that is quadratic with votes for acceptable
-    fit <- lm(n ~ I(vars^2), data = accept_1)
+    fit <- lm(prop ~ I(vars^2), data = accept_1)
     
     if(fit$coefficients[2] < 0){
       return(T)

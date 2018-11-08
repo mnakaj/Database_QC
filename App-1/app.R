@@ -166,6 +166,7 @@ ui <- fluidPage(
                               tableOutput("vm_fpm"),
                               tableOutput("vl_ms"),
                               tableOutput("vl_fpm"))), 
+                  tabPanel("Unit Conversions"),
                   tabPanel("Calculated Indices", h3("Formatting checks for Calculated Indices"), fluidRow(tableOutput("PMV"),
                                                           tableOutput("PPD"),
                                                           tableOutput("SET"))),
@@ -676,7 +677,8 @@ server <- function(input, output) {
       return(NULL)
     }
     
-    ggplot(df1, aes(x =`Air temperature (°F)`)) + geom_bar(aes(fill = factor(`Thermal sensation acceptability`)))
+    ggplot(df1, aes(x =round(`Thermal sensation`))) + geom_bar(aes(fill = factor(`Thermal sensation acceptability`)), position = 'fill') +
+       xlab("Binned Thermal Sensation") + ylab("Proportion") + scale_fill_discrete(name = "Thermal acceptability legend")
   })
   
   output$T_comfort_f <- renderTable({
