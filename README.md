@@ -4,6 +4,8 @@ Please run formatting and reasonability checks to data submissions by submitting
 
 - Website for submission: [https://databaseqc.shinyapps.io/submission/](https://databaseqc.shinyapps.io/submission/) 
 
+- [Submission csv file template](https://github.com/mnakaj/Database_QC/blob/master/App-1/Data/submission_template.csv)
+
 - Document with how tests check reasonability can be found [here](https://github.com/mnakaj/Database_QC/blob/master/Reasonability%20Tests/reasonability_tests.md). 
 
 - All format-checking functions can be found [here](https://github.com/mnakaj/Database_QC/blob/master/App-1/funcs.R).
@@ -11,6 +13,8 @@ Please run formatting and reasonability checks to data submissions by submitting
 - Codes for countries and Koppen climates in this database can be found [here](https://github.com/mnakaj/Database_QC/tree/master/App-1/Data).
 
 - You can use [this](https://github.com/mnakaj/Database_QC/blob/master/publication2.csv) example csv file to see what type of outputs are expected.
+
+
 
 ### Notes: 
 To come: 
