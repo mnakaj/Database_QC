@@ -1,6 +1,6 @@
 # Database Quality Check
 
-By submitting a csv file to the below web address, we can run formatting and reasonability checking functions to make sure data submissions to the database are consistent.
+Please run formatting and reasonability checks to data submissions by submitting a csv file to following address: 
 
 - Website for submission: [https://databaseqc.shinyapps.io/submission/](https://databaseqc.shinyapps.io/submission/) 
 
