@@ -100,6 +100,25 @@ check_koppen <- function(df){
 }
 
 
+### Modification to check criteria. Koppen climate only needs to be a 3 letter code. 
+### Will no longer be checking for a matching climate name. 
+check_koppen2 <- function(df){
+  
+  climates <- as.character(df$`Koppen climate classification`)
+  #check for 3 letter combinations
+  index <- which(!grepl("^[[:alpha:]][[:alpha:]][[:alpha:]]$", climates))
+  if(length(index) > 0){
+    wrong_codes <- df$`Koppen climate classification`[index]
+    new_df <- data.frame(index, wrong_codes)
+    names(new_df) <- c("Index", "Koppen climate classification")
+    return(new_df)
+    
+  }else{
+    return(TRUE)
+  }
+  
+}
+
 ### Climate
 
 check_climate <- function(df){
@@ -841,11 +860,11 @@ check_weight <- function(df){
 ### Height
 check_height <- function(df){
   
-  height <- df$`Subject´s height (kg)`
+  height <- df$`Subject´s height (cm)`
   is_int_height <- sapply(height, is.numeric)
   
   #check for a reasonable height range
-  height_range <- ifelse( height <= 250 || height >= 60  , FALSE, TRUE)
+  height_range <- ifelse( height <= 250 || height >= 30  , FALSE, TRUE)
   
   if (length(which(height_range)) > 0 || length(which(!is_int_height)) > 0 ){
     index <- unique(union(which(!is_int_height), which(height_range)))
@@ -895,7 +914,7 @@ check_environ_control <- function(col){
 
 ##### Farenheit & Celsius, m/s & fpm, PMV & PPD 
 
-check_conversion <- function(col1, col2, mult, const = 0, accuracy, names = c("col2", "col1"), source = ""){
+check_conversion <- function(col1, col2, mult, const = 0, accuracy, names = c("col1", "col2"), source = ""){
   ## where conversion whould be col1 = const + mult*col2
   ## accuracy is how many digits past zero to round to 
   ## names is name of 1st and 2nd column of choice
@@ -908,8 +927,8 @@ check_conversion <- function(col1, col2, mult, const = 0, accuracy, names = c("c
   index <- c()
   
   if(length(col1) > 0 & length(col2) > 0){
-    converted <- mult*(col2 + const)
-    index <- which(round(col1, digits = accuracy) != round(converted, digits = accuracy))
+    converted <- mult*(col1) + const
+    index <- which(round(col2, digits = accuracy) != round(converted, digits = accuracy))
   }else{
     return(T)
   }
@@ -919,7 +938,7 @@ check_conversion <- function(col1, col2, mult, const = 0, accuracy, names = c("c
     wrong_col2 <- col2[index]
     
     source_name <- rep(source, times = length(wrong_col1))
-    new_df <- data.frame(index, wrong_col2, wrong_col1, source_name)
+    new_df <- data.frame(index, wrong_col1, wrong_col2, source_name)
     names(new_df) <- c("Index", names, "Source")
     return(new_df)
   }else{

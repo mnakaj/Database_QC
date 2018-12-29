@@ -2,6 +2,7 @@ library(shiny)
 library(shinyjs)
 library(plotly)
 library(dplyr)
+library(shinydashboard)
 library(tidyverse)
 source("funcs.R")
 library(here)
@@ -63,8 +64,6 @@ ui <- fluidPage(
     
     # Main panel for displaying outputs ----
     mainPanel(
-      
-      
       tabsetPanel(type = "tabs",
                   tabPanel("Submitted Data", h3("Submission Formatting"),
                            p("Please ensure all formatting is correct before continuing with quality check."),
@@ -75,6 +74,19 @@ ui <- fluidPage(
                            tableOutput("contents")),
                   tabPanel("Basic Identifiers", h3("Formatting checks for Basic Identifiers"),
                            p("If there are formatting errors, errors will be listed in a table. Please be patient as functions load."),
+                           wellPanel(h3("Checking Criteria"),
+                                     p("All values should be NA or:"),
+                                     tags$li(tags$b("Data contributor:"), "Non-numeric entry, only letters"),
+                                     tags$li(tags$b("Year:"), "Four-digit number"),
+                                     tags$li(tags$b("Season"), "Spring, Summer, Autumn or Winter"),
+                                     tags$li(tags$b("Koppen:"), "Must be a 3-letter code"),
+                                     tags$li(tags$b("Country:"), "Must be a country listed in the file `CountryCodes.csv`"),
+                                     tags$li(tags$b("City:"), "Must be a city found in openstreetmap.org"),
+                                     tags$li(tags$b("Building Type:"), "Classroom, Multifamily Housing, Office, Senior Center or Others"), 
+                                     tags$li(tags$b("Cooling strategy:") ,"Air Conditioned, Mixed Mode, Naturally Ventilated or Mechanically Ventilated"),
+                                     tags$li(tags$b("Cooling strategy with MM:"), "Air Conditioned, Naturally Ventilated or Unknown"),
+                                     tags$li(tags$b("Heating strategy:"), "Mechanical Heating"),
+                                     style = "background: aliceblue"),
                           fluidRow(
                           tableOutput("Contributor"), 
                            tableOutput("Year"), 
@@ -88,7 +100,15 @@ ui <- fluidPage(
                            tableOutput("Cooling"), 
                            tableOutput("CoolingMM"), 
                            tableOutput("Heating"))), 
-                  tabPanel("Subjects' Information", h3("Formatting checks for Subjects' Information"), fluidRow(tableOutput("Age"),
+                  tabPanel("Subjects' Information", h3("Formatting checks for Subjects' Information"), 
+                           wellPanel(h3("Checking Criteria"),
+                                     p("All values should be NA or:"),
+                                     tags$li(tags$b("Age:"), "Integer between 0 and 100"),
+                                     tags$li(tags$b("Sex:"), "Male, Female or Undefined"), 
+                                     tags$li(tags$b("Weight:"), "Numeric value between 15kg and 150kg"),
+                                     tags$li(tags$b("Height:"), "Numeric value between 30cm and 250cm"),
+                                     style = "background: aliceblue"),
+                             fluidRow(tableOutput("Age"),
                              tableOutput("Sex"), 
                              tableOutput("Weight"),
                              tableOutput("Height")
@@ -99,40 +119,81 @@ ui <- fluidPage(
                                 encodings of data. Plots are shown regardless of passing or not passing reasonability tests."),  
                               h4("Thermal comfort data"),
                               strong(em("Thermal sensation")),
+                              wellPanel(tags$b("Checking Criteria"),
+                                        tags$li(em("Format:"), "Numeric value between -3 and 3, or NA"),
+                                        tags$li(em("Reasonability:"), "Average thermal sensation is expected to increase with respect to indoor air temperature"),
+                                        style = "background: aliceblue"),
                               textOutput("T_sensation"),
                               plotOutput("T_sensation_g"),
                               tableOutput("T_sensation_f"),
                               strong(em("Thermal acceptability")),
+                              wellPanel(tags$b("Checking Criteria"),
+                                        tags$li(em("Format:"), "0, 1 or NA"),
+                                        tags$li(em("Reasonability:"), "Proportion of people voting acceptable (1) is expected to be negatively quadratic with respect to thermal sensation, ie. proportion increases and then decreases with peak at thermal sensation of 0."),
+                                        style = "background: aliceblue"),
                               textOutput("T_acceptability"),
                               plotOutput("T_acceptability_g"),
                               tableOutput("T_acceptability_f"),
                               strong(em("Thermal preference")),
+                              wellPanel(tags$b("Checking Criteria"),
+                                        tags$li(em("Format:"), "warmer, no change, cooler, or NA"),
+                                        tags$li(em("Reasonability:"), "Proportion of people voting warmer is expected to go down with increased thermal sensation. Proportion of people voting cooler is expected to go up with increased thermal sensation."),
+                                        style = "background: aliceblue"),
                               textOutput("T_preference"),
                               plotOutput("T_preference_g"),
                               tableOutput("T_preference_f"),
                               strong(em("Thermal comfort")),
+                              wellPanel(tags$b("Checking Criteria"),
+                                        tags$li(em("Format:"), "Numeric value between 0 and 6, or NA"),
+                                        tags$li(em("Reasonability:"), "Average thermal comfort value at each thermal sensation is expected to be negatively quadratic with respect to thermal sensation."),
+                                        style = "background: aliceblue"),
                               textOutput("T_comfort"),
                               plotOutput("T_comfort_g"),
                               tableOutput("T_comfort_f"),
                               h4("Air movement comfort data"),
                               strong(em("Air movement preference")),
+                              wellPanel(tags$b("Checking Criteria"),
+                                        tags$li(em("Format:"), "less, no change, more, or NA"),
+                                        tags$li(em("Reasonability:"), "On average, proportion of people wanting more air movement is expected to decrease as air velocities increase."),
+                                        style = "background: aliceblue"),
                               textOutput("A_preference"),
                               plotOutput("A_preference_g"),
                               tableOutput("A_preference_f"),
                               strong(em("Air movement acceptability")),
+                              wellPanel(tags$b("Checking Criteria"),
+                                        tags$li(em("Format:"), "0, 1 or NA"),
+                                        tags$li(em("Reasonability:"), "Proportion of people who find air movement acceptable is expected to be highest in category `no change`."),
+                                        style = "background: aliceblue"),
                               textOutput("A_acceptability"),
                               plotOutput("A_acceptability_g"),
                               tableOutput("A_acceptability_f"),
                               h4("Humidity Comfort Data"),
                               strong(em("Humidity sensation")),
+                              wellPanel(tags$b("Checking Criteria"),
+                                        tags$li(em("Format:"), "Numeric value between -3 and 3, or NA"),
+                                        tags$li(em("Reasonability:"), "Humidity sensation is expected to decrease with respect to relative humidity percentage"),
+                                        style = "background: aliceblue"),
                               textOutput("H_sensation"),
                               plotOutput("H_sensation_g"),
                               tableOutput("H_sensation_f"),
                               strong(em("Humidity preference")),
+                              wellPanel(tags$b("Checking Criteria"),
+                                        tags$li(em("Format:"), "drier, more humid, no change, or NA"),
+                                        tags$li(em("Reasonability:"), "Proportion of people wanting drier is expected to decrease with humidity sensation. Proportion of people wanting more humid is expected to increase with humidity sensation. "),
+                                        style = "background: aliceblue"),
                               textOutput("H_preference"),
                               plotOutput("H_preference_g"),
                               tableOutput("H_preference_f"))), 
                   tabPanel("Instrumented Measurements", h3("Formatting checks for Instrumented Measurements"),
+                           wellPanel(tags$b("Checking Criteria"),
+                                     p("All measured values should be NA or:"),
+                                     tags$li(tags$b("Measured indoor air temperature values:"), "Numeric value between 0°F and 120°F or between -17°C and 50°C"),
+                                     tags$li(tags$b("Measured monthly outdoor air temperature values:"), "Numeric value between -60°F and 140°F or between -50°C and 60°C"),
+                                     tags$li(tags$b("Relative Humidity:"), "Numeric value between 0 and 100"), 
+                                     tags$li(tags$b("Clo:"), "Numeric value between 0 and 5"), 
+                                     tags$li(tags$b("Measured metabolic rate values:"), "Numeric value between 0 and 10"),
+                                     tags$li(tags$b("Measured velocity values:"), "Numeric value between 0 m/s and 5 m/s or between 0 fpm and 985 fpm"),
+                                     style = "background: aliceblue"),
                            fluidRow(h4("Temperature"), tableOutput("Air_temp_C"),
                               tableOutput("Air_temp_F"),
                               tableOutput("Ta_h_C"),
@@ -174,15 +235,30 @@ ui <- fluidPage(
                               tableOutput("vm_fpm"),
                               tableOutput("vl_ms"),
                               tableOutput("vl_fpm"))), 
-                  tabPanel("Unit Conversions", 
+                  tabPanel("Unit Conversions",
+                           wellPanel(tags$b("Checking Criteria"),
+                                     tags$li(tags$b("Temperature:"), "checks °F = 32 + (°C x (9/5))"), 
+                                     tags$li(tags$b("Velocity:"), "checks fpm = 196.85*(m/s)"),
+                                     style = "background: aliceblue"),
                            h4("Temperature"),
                            tableOutput("temp_conv"),
                            h4("Velocity"),
                            tableOutput("velocity_conv")),
-                  tabPanel("Calculated Indices", h3("Formatting checks for Calculated Indices"), fluidRow(tableOutput("PMV"),
+                  tabPanel("Calculated Indices", h3("Formatting checks for Calculated Indices"), 
+                           wellPanel(tags$b("Checking Criteria"),
+                                     p("All values should be NA or:"),
+                                     tags$li(tags$b("PMV:"), "Numeric value between -3 and 3"), 
+                                     tags$li(tags$b("PPD:"), "Numeric value between 0 and 100"), 
+                                     tags$li(tags$b("SET:"), "Numeric value between -17°C and 50°C"),
+                                     style = "background: aliceblue"),
+                                                          fluidRow(tableOutput("PMV"),
                                                           tableOutput("PPD"),
                                                           tableOutput("SET"))),
-                  tabPanel("Environmental Control",h3("Formatting checks for Environmental Control Variables"), fluidRow(tableOutput("Blind"), 
+                  tabPanel("Environmental Control",h3("Formatting checks for Environmental Control Variables"), 
+                           wellPanel(tags$b("Checking Criteria"),
+                                     p("All values should be 0, 1 or NA"),
+                                     style = "background: aliceblue"),
+                           fluidRow(tableOutput("Blind"), 
                               tableOutput("Fan"), 
                               tableOutput("Window"),
                               tableOutput("Door"),
@@ -289,10 +365,10 @@ server <- function(input, output) {
     req(input$file1)
     
     df1 <- read.csv(input$file1$datapath, sep = ",",
-                    header = TRUE, stringsAsFactors = FALSE )
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F  )
     
     if(all(is.na(df1$`Data contributor`)) == T){
-      return(na_message("Data Contributor"))
+      return(na_message("Data contributor"))
     }
     
     check <- check_contributor(df1)
@@ -315,7 +391,7 @@ server <- function(input, output) {
     req(input$file1)
     
     df1 <- read.csv(input$file1$datapath, sep = ",",
-                    header = TRUE, stringsAsFactors = FALSE )
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F  )
     
     if(all(is.na(df1$`Year`)) == T){
       return(na_message("Year"))
@@ -357,13 +433,13 @@ server <- function(input, output) {
     req(input$file1)
     
     df1 <- read.csv(input$file1$datapath, sep = ",",
-                    header = TRUE, stringsAsFactors = FALSE )
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F )
     
     if(all(is.na(df1$`Koppen climate classification`)) == T){
       return(na_message("Koppen climate classification"))
     }
     
-    check <- check_koppen(df1)
+    check <- check_koppen2(df1)
     
     if(is.data.frame(check)){
       return(check)
@@ -375,30 +451,31 @@ server <- function(input, output) {
   })
   
   output$Climate <- renderTable({
-    req(input$file1)
-    
-    df1 <- read.csv(input$file1$datapath, sep = ",",
-                    header = TRUE, stringsAsFactors = FALSE )
-    col <- df1$`Climate`
-    if(all(is.na(col)) == T){
-      return(na_message("Climate"))
-    }
-    check <- check_climate(df1)
-    
-    if(is.data.frame(check)){
-      return(check)
-    }else{
-      message <- data.frame(c("Climate: passed"))
-      names(message) <- c("")
-      return(message)
-    }
+    # Edit: no check climate
+    # req(input$file1)
+    # 
+    # df1 <- read.csv(input$file1$datapath, sep = ",",
+    #                 header = TRUE, stringsAsFactors = FALSE, check.names = F  )
+    # col <- df1$`Climate`
+    # if(all(is.na(col)) == T){
+    #   return(na_message("Climate"))
+    # }
+    # check <- check_climate(df1)
+    # 
+    # if(is.data.frame(check)){
+    #   return(check)
+    # }else{
+    #   message <- data.frame(c("Climate: passed"))
+    #   names(message) <- c("")
+    #   return(message)
+    # }
   })
   
   output$Country <- renderTable({
     req(input$file1)
     
     df1 <- read.csv(input$file1$datapath, sep = ",",
-                    header = TRUE, stringsAsFactors = FALSE )
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F  )
     
     col <- df1$Country
     if(all(is.na(col)) == T){
@@ -421,7 +498,7 @@ server <- function(input, output) {
     req(input$file1)
     
     df1 <- read.csv(input$file1$datapath, sep = ",",
-                    header = TRUE, stringsAsFactors = FALSE )
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F  )
     
     col <- df1$City
     if(all(is.na(col)) == T){
@@ -443,9 +520,9 @@ server <- function(input, output) {
     req(input$file1)
     
     df1 <- read.csv(input$file1$datapath, sep = ",",
-                    header = TRUE, stringsAsFactors = FALSE )
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
     
-    col <- df1$`Building Type`
+    col <- df1$`Building type`
     if(all(is.na(col)) == T){
       return(na_message("Building Type"))
     }
@@ -465,7 +542,7 @@ server <- function(input, output) {
     req(input$file1)
     
     df1 <- read.csv(input$file1$datapath, sep = ",",
-                    header = TRUE, stringsAsFactors = FALSE )
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F  )
     
     col <- df1$`Cooling startegy_building level`
     if(all(is.na(col)) == T){
@@ -487,7 +564,7 @@ server <- function(input, output) {
     req(input$file1)
     
     df1 <- read.csv(input$file1$datapath, sep = ",",
-                    header = TRUE, stringsAsFactors = FALSE )
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F  )
     
     col <- df1$`Cooling startegy_operation mode for MM buildings`
     if(all(is.na(col)) == T){
@@ -509,7 +586,7 @@ server <- function(input, output) {
     req(input$file1)
     
     df1 <- read.csv(input$file1$datapath, sep = ",",
-                    header = TRUE, stringsAsFactors = FALSE )
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F  )
     
     col <- df1$`Heating strategy_building level`
     if(all(is.na(col)) == T){
@@ -531,7 +608,7 @@ server <- function(input, output) {
     req(input$file1)
     
     df1 <- read.csv(input$file1$datapath, sep = ",",
-                    header = TRUE, stringsAsFactors = FALSE )
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F  )
     
     col <- df1$`Age`
     print(all(is.na(col)))
@@ -555,7 +632,7 @@ server <- function(input, output) {
     req(input$file1)
     
     df1 <- read.csv(input$file1$datapath, sep = ",",
-                    header = TRUE, stringsAsFactors = FALSE )
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F  )
     
     col <- df1$`Sex`
     if(all(is.na(col)) == T){
@@ -577,7 +654,7 @@ server <- function(input, output) {
     req(input$file1)
     
     df1 <- read.csv(input$file1$datapath, sep = ",",
-                    header = TRUE, stringsAsFactors = FALSE )
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F  )
     
     col <- df1$`Subject´s weight (kg)`
     if(all(is.na(col)) == T){
@@ -598,7 +675,7 @@ server <- function(input, output) {
     req(input$file1)
     
     df1 <- read.csv(input$file1$datapath, sep = ",",
-                    header = TRUE, stringsAsFactors = FALSE )
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F  )
     
     col <- df1$`Subject´s height (cm)`
     if(all(is.na(col)) == T){
@@ -1554,7 +1631,7 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_temp_R(temps, -22, 140, "Outdoor monthly air temperature (°F)")
+    check <- check_temp_R(temps, -60, 140, "Outdoor monthly air temperature (°F)")
     
     
     
@@ -1580,7 +1657,7 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
-    check <- check_temp_R(temps, -30, 60, "Outdoor monthly air temperature (°C)")
+    check <- check_temp_R(temps, -50, 60, "Outdoor monthly air temperature (°C)")
     
     
     
@@ -2355,17 +2432,17 @@ server <- function(input, output) {
                     header = TRUE, stringsAsFactors = FALSE, check.names = F)
     
     #list all wrong temperature conversions
-    t1 <- check_conversion(df1$`Air temperature (°C)`, df1$`Air temperature (°F)`, mult = 5/9, const = -32, accuracy = 1, names = c("°F", "°C"), source = "Air Temperature")
-    t2 <- check_conversion(df1$`Ta_h (°C)`, df1$`Ta_h (°F)`, mult = 5/9, const = -32, accuracy = 1, names = c("°F", "°C"), source = "Ta_h")
-    t3 <- check_conversion(df1$`Ta_m (°C)`, df1$`Ta_m (°F)`, mult = 5/9, const = -32, accuracy = 1, names = c("°F", "°C"), source = "Ta_m")
-    t4 <- check_conversion(df1$`Ta_l (°C)`, df1$`Ta_l (°F)`, mult = 5/9, const = -32, accuracy = 1, names = c("°F", "°C"), source = "Ta_l")
-    t5 <- check_conversion(df1$`Operative temperature (°C)`, df1$`Operative temperature (°F)`, mult = 5/9, const = -32, accuracy = 1, names = c("°F", "°C"), source = "Operative Temperature")
-    t6 <- check_conversion(df1$`Radiant temperature (°C)`, df1$`Radiant temperature (°F)`, mult = 5/9, const = -32, accuracy = 1, names = c("°F", "°C"), source = "Radiant Temperature")
-    t7 <- check_conversion(df1$`Globe temperature (°C)`, df1$`Globe temperature (°F)`, mult = 5/9, const = -32, accuracy = 1, names = c("°F", "°C"), source = "Globe Temperature")
-    t8 <- check_conversion(df1$`Tg_h (°C)`, df1$`Tg_h (°F)`, mult = 5/9, const = -32, accuracy = 1, names = c("°F", "°C"), source = "Tg_h")
-    t9 <- check_conversion(df1$`Tg_m (°C)`, df1$`Tg_m (°F)`, mult = 5/9, const = -32, accuracy = 1, names = c("°F", "°C"), source = "Tg_m")
-    t10 <- check_conversion(df1$`Tg_l (°C)`, df1$`Tg_l (°F)`, mult = 5/9, const = -32, accuracy = 1, names = c("°F", "°C"), source = "Tg_l")
-    t11 <- check_conversion(df1$`Outside monthly air temperature (°C)`, df1$`Outside monthly air temperature (°F)`, mult = 5/9, const = -32, accuracy = 1, names = c("°F", "°C"), source = "Outside Monthly Air Temperature")
+    t1 <- check_conversion(df1$`Air temperature (°C)`, df1$`Air temperature (°F)`, mult = 9/5, const = 32, accuracy = 1, names = c("°C", "°F"), source = "Air Temperature")
+    t2 <- check_conversion(df1$`Ta_h (°C)`, df1$`Ta_h (°F)`, mult = 9/5, const = 32, accuracy = 1, names = c("°C", "°F"), source = "Ta_h")
+    t3 <- check_conversion(df1$`Ta_m (°C)`, df1$`Ta_m (°F)`,  mult = 9/5, const = 32, accuracy = 1, names = c("°C", "°F"), source = "Ta_m")
+    t4 <- check_conversion(df1$`Ta_l (°C)`, df1$`Ta_l (°F)`,  mult = 9/5, const = 32, accuracy = 1, names = c("°C", "°F"), source = "Ta_l")
+    t5 <- check_conversion(df1$`Operative temperature (°C)`, df1$`Operative temperature (°F)`, mult = 9/5, const = 32, accuracy = 1, names = c("°C", "°F"), source = "Operative Temperature")
+    t6 <- check_conversion(df1$`Radiant temperature (°C)`, df1$`Radiant temperature (°F)`, mult = 9/5, const = 32, accuracy = 1, names = c("°C", "°F"), source = "Radiant Temperature")
+    t7 <- check_conversion(df1$`Globe temperature (°C)`, df1$`Globe temperature (°F)`, mult = 9/5, const = 32, accuracy = 1, names = c("°C", "°F"), source = "Globe Temperature")
+    t8 <- check_conversion(df1$`Tg_h (°C)`, df1$`Tg_h (°F)`,  mult = 9/5, const = 32, accuracy = 1, names = c("°C", "°F"), source = "Tg_h")
+    t9 <- check_conversion(df1$`Tg_m (°C)`, df1$`Tg_m (°F)`, mult = 9/5, const = 32, accuracy = 1, names = c("°C", "°F"), source = "Tg_m")
+    t10 <- check_conversion(df1$`Tg_l (°C)`, df1$`Tg_l (°F)`, mult = 9/5, const = 32, accuracy = 1, names = c("°C", "°F"), source = "Tg_l")
+    t11 <- check_conversion(df1$`Outside monthly air temperature (°C)`, df1$`Outside monthly air temperature (°F)`, mult = 9/5, const = 32, accuracy = 1, names = c("°C", "°F"), source = "Outside Monthly Air Temperature")
     
     #create a list of potentially wrong conversions
     tables <- list(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11)
@@ -2402,8 +2479,8 @@ server <- function(input, output) {
                     header = TRUE, stringsAsFactors = FALSE, check.names = F)
     
     #list all wrong velocity conversions
-    t1 <- check_conversion(df1$`Air velocity (fpm)`, df1$`Air velocity (m/s)`, mult = 196.85, accuracy = 2, names = c("m/s", "fpm"), source = "Air Velocity")
-    t2 <- check_conversion(df1$`Velocity_h (fpm)`, df1$`Velocity_h (m/s)`, mult = 196.85, accuracy = 2, names = c("m/s", "fpm"), source = "Velocity_h")
+    t1 <- check_conversion(df1$`Air velocity (m/s)`, df1$`Air velocity (fpm)`, mult = 196.85, accuracy = 2, names = c("m/s", "fpm"), source = "Air Velocity")
+    t2 <- check_conversion(df1$`Velocity_h (m/s)`, df1$`Velocity_h (fpm)`, mult = 196.85, accuracy = 2, names = c("m/s", "fpm"), source = "Velocity_h")
     #create a list of potentially wrong conversions
     tables <- list(t1, t2)
     #if element is a dataframe, then there exists wrong conversions
