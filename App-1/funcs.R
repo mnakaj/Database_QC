@@ -301,13 +301,14 @@ check_heating <- function(df){
 ### Age
 
 check_age <- function(df){
-  print(unique(df$`Data contributor`))
+  
   age <- df$`Age`
+  nas <- which(!is.na(age))
   is_int_age <- sapply(age, is.numeric)
 
   age_range <- ifelse( (age <= 100 || age >= 0 ) & abs(round(age)- age) == 0, FALSE, TRUE)
   
-  if (length(which(age_range)) > 0 || length(which(!is_int_age)) > 0 ){
+  if (length(which(age_range) %in% nas ) > 0 || length(which(!is_int_age) %in% nas) > 0 ){
     index <- unique(union(which(!is_int_age), which(age_range)))
     wrong_age <- df$Age[index]
     new_df <- data.frame(index, wrong_age)
@@ -894,21 +895,32 @@ check_environ_control <- function(col){
 
 ##### Farenheit & Celsius, m/s & fpm, PMV & PPD 
 
-check_conversion <- function(col1, col2, mult, const = 0, accuracy, names = c()){
+check_conversion <- function(col1, col2, mult, const = 0, accuracy, names = c("col2", "col1"), source = ""){
   ## where conversion whould be col1 = const + mult*col2
   ## accuracy is how many digits past zero to round to 
+  ## names is name of 1st and 2nd column of choice
+  
+  #filter for non-na values 
+  col1 <- col1[which(!is.na(col1))]
+  col2 <- col2[which(!is.na(col2))] 
   
   
-  converted <- mult*col2 + const
+  index <- c()
   
-  index <- which(round(col1, digits = accuracy) != round(converted, digits = accuracy))
+  if(length(col1) > 0 & length(col2) > 0){
+    converted <- mult*(col2 + const)
+    index <- which(round(col1, digits = accuracy) != round(converted, digits = accuracy))
+  }else{
+    return(T)
+  }
   
   if(length(index) > 0){
     wrong_col1 <- col1[index]
     wrong_col2 <- col2[index]
     
-    new_df <- data.frame(index, wrong_col1, wrong_col2)
-    names(new_df) <- c("Index", names)
+    source_name <- rep(source, times = length(wrong_col1))
+    new_df <- data.frame(index, wrong_col2, wrong_col1, source_name)
+    names(new_df) <- c("Index", names, "Source")
     return(new_df)
   }else{
     return(T)
@@ -923,8 +935,8 @@ check_conversion <- function(col1, col2, mult, const = 0, accuracy, names = c())
 
 ### Helper Functions
 
-na_message <- function(col, name){
-    string <- paste(col, ": All NA")
+na_message <- function(name){
+    string <- paste(name, ": All NA")
     message <- data.frame(c(string))
     names(message) <- c("")
     return(message)

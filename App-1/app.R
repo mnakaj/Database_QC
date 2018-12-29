@@ -2,10 +2,12 @@ library(shiny)
 library(shinyjs)
 library(plotly)
 library(dplyr)
+library(tidyverse)
 source("funcs.R")
+library(here)
 #csv file with Koppen climate names and codes
 climate_names <- read.csv("./Data/kfc_climates.csv", header = TRUE)
-NUM_PAGES <- 2
+
 
 # Define UI for data upload app ----
 ui <- fluidPage(
@@ -64,10 +66,16 @@ ui <- fluidPage(
       
       
       tabsetPanel(type = "tabs",
-                  tabPanel("Submitted Data", tableOutput("contents")),
+                  tabPanel("Submitted Data", h3("Submission Formatting"),
+                           p("Please ensure all formatting is correct before continuing with quality check."),
+                           textOutput("formatting"),
+                           tableOutput("names"),
+                           hr(),
+                           h3("Submitted Data"),
+                           tableOutput("contents")),
                   tabPanel("Basic Identifiers", h3("Formatting checks for Basic Identifiers"),
                            p("If there are formatting errors, errors will be listed in a table. Please be patient as functions load."),
-                          fluidRow(tableOutput("Publication"),
+                          fluidRow(
                           tableOutput("Contributor"), 
                            tableOutput("Year"), 
                            tableOutput("Season"),
@@ -166,7 +174,11 @@ ui <- fluidPage(
                               tableOutput("vm_fpm"),
                               tableOutput("vl_ms"),
                               tableOutput("vl_fpm"))), 
-                  tabPanel("Unit Conversions"),
+                  tabPanel("Unit Conversions", 
+                           h4("Temperature"),
+                           tableOutput("temp_conv"),
+                           h4("Velocity"),
+                           tableOutput("velocity_conv")),
                   tabPanel("Calculated Indices", h3("Formatting checks for Calculated Indices"), fluidRow(tableOutput("PMV"),
                                                           tableOutput("PPD"),
                                                           tableOutput("SET"))),
@@ -189,6 +201,59 @@ ui <- fluidPage(
 server <- function(input, output) {
   
   
+  
+  output$formatting <- renderText({
+    
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F )
+    
+    #checks for correct number of columns
+    if(ncol(df1) != 71){
+      return("File does not have the correct number of columns. Please check with provided template sheet on the left.")
+    }
+    
+    col_names <- names(df1)
+    
+    sub <- read_csv("./Data/submission_template.csv")
+    
+    if(!all(col_names == names(sub))){
+      return("File does not have the correct name columns. Please check with provided template sheet on the left or check that file has UTF-8 encoding.")
+      
+    }
+    
+    return("Formatting: passed.")
+    
+  })
+  
+  output$names <- renderTable({
+    
+    req(input$file1)
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F )
+    
+    col_names <- names(df1)
+    
+    sub <- read_csv("./Data/submission_template.csv")
+    sub_names <- names(sub)
+    wrong <- subset(col_names, !(col_names %in% sub_names))
+  
+    if (length(wrong) > 0){
+      index <- which(col_names %in% wrong) 
+      expected <- sub_names[index]
+      
+      df <- data.frame(wrong, expected)
+      names(df) <- c("Entered Column Name", "Expected")
+      return(df)
+    }else{
+      return(NULL)
+    }
+    
+    
+    
+  })
   output$contents <- renderTable({
     
     # input$file1 will be NULL initially. After the user selects
@@ -209,6 +274,8 @@ server <- function(input, output) {
     
   })
   
+  
+  
   output$downloadTemp <- downloadHandler(
     
     filename <- "submission_template.csv",
@@ -225,7 +292,7 @@ server <- function(input, output) {
                     header = TRUE, stringsAsFactors = FALSE )
     
     if(all(is.na(df1$`Data contributor`)) == T){
-      na_message(df1$`Data contributor`, "Data Contributor")
+      return(na_message("Data Contributor"))
     }
     
     check <- check_contributor(df1)
@@ -251,7 +318,7 @@ server <- function(input, output) {
                     header = TRUE, stringsAsFactors = FALSE )
     
     if(all(is.na(df1$`Year`)) == T){
-      na_message(df1$`Year`, "Year")
+      return(na_message("Year"))
     }
     
     check <- check_year(df1)
@@ -272,7 +339,7 @@ server <- function(input, output) {
                     header = TRUE, stringsAsFactors = FALSE, check.names = FALSE)
     
     if(all(is.na(df1$`Season`)) == T){
-      na_message(df1$`Season`, "Season")
+      return(na_message("Season"))
     }
     
     check <- check_season(df1)
@@ -293,7 +360,7 @@ server <- function(input, output) {
                     header = TRUE, stringsAsFactors = FALSE )
     
     if(all(is.na(df1$`Koppen climate classification`)) == T){
-      na_message(df1$`Koppen climate classification`, "Koppen climate classification")
+      return(na_message("Koppen climate classification"))
     }
     
     check <- check_koppen(df1)
@@ -314,7 +381,7 @@ server <- function(input, output) {
                     header = TRUE, stringsAsFactors = FALSE )
     col <- df1$`Climate`
     if(all(is.na(col)) == T){
-      na_message(df1$col, "Climate")
+      return(na_message("Climate"))
     }
     check <- check_climate(df1)
     
@@ -335,7 +402,7 @@ server <- function(input, output) {
     
     col <- df1$Country
     if(all(is.na(col)) == T){
-      na_message(df1$col, "Country")
+      return(na_message("Country"))
     }
     
     check <- check_country(df1)
@@ -358,7 +425,7 @@ server <- function(input, output) {
     
     col <- df1$City
     if(all(is.na(col)) == T){
-      na_message(df1$col, "City")
+      return(na_message("City"))
     }
     
     check <- check_city(df1)
@@ -380,7 +447,7 @@ server <- function(input, output) {
     
     col <- df1$`Building Type`
     if(all(is.na(col)) == T){
-      na_message(df1$col, "Building Type")
+      return(na_message("Building Type"))
     }
     
     check <- check_building(df1)
@@ -402,7 +469,7 @@ server <- function(input, output) {
     
     col <- df1$`Cooling startegy_building level`
     if(all(is.na(col)) == T){
-      na_message(df1$col, "Cooling Strategy")
+      return(na_message("Cooling Strategy"))
     }
     
     check <- check_cooling(df1)
@@ -424,7 +491,7 @@ server <- function(input, output) {
     
     col <- df1$`Cooling startegy_operation mode for MM buildings`
     if(all(is.na(col)) == T){
-      na_message(df1$col, "Cooling Strategy with MM")
+      return(na_message("Cooling Strategy with MM"))
     }
     
     check <- check_cooling_mm(df1)
@@ -446,7 +513,7 @@ server <- function(input, output) {
     
     col <- df1$`Heating strategy_building level`
     if(all(is.na(col)) == T){
-      na_message(df1$col, "Heating strategy")
+      return(na_message("Heating strategy"))
     }
     
     check <- check_heating(df1)
@@ -467,8 +534,9 @@ server <- function(input, output) {
                     header = TRUE, stringsAsFactors = FALSE )
     
     col <- df1$`Age`
+    print(all(is.na(col)))
     if(all(is.na(col)) == T){
-      na_message(df1$col, "Age")
+      return(na_message( "Age"))
     }
     
     check <- check_age(df1)
@@ -491,7 +559,7 @@ server <- function(input, output) {
     
     col <- df1$`Sex`
     if(all(is.na(col)) == T){
-      na_message(df1$col, "Sex")
+      return(na_message( "Sex"))
     }
     
     check <- check_sex(df1)
@@ -513,7 +581,7 @@ server <- function(input, output) {
     
     col <- df1$`Subject´s weight (kg)`
     if(all(is.na(col)) == T){
-      na_message(df1$col, "Weight")
+      return(na_message("Weight"))
     }
     
     check <- check_weight(df1)
@@ -534,7 +602,7 @@ server <- function(input, output) {
     
     col <- df1$`Subject´s height (cm)`
     if(all(is.na(col)) == T){
-      na_message(df1$col, "Height")
+      return(na_message("Height"))
     }
     
     check <- check_height(df1)
@@ -1755,7 +1823,7 @@ server <- function(input, output) {
     if(is.data.frame(check)){
       return(check)
     }else{
-      message <- data.frame(c("Met"))
+      message <- data.frame(c("Met: passed"))
       names(message) <- c("")
       return(message)
     }
@@ -2279,6 +2347,89 @@ server <- function(input, output) {
       names(message) <- c("")
       return(message)
     }
+  })
+  
+  output$temp_conv <- renderTable({
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    #list all wrong temperature conversions
+    t1 <- check_conversion(df1$`Air temperature (°C)`, df1$`Air temperature (°F)`, mult = 5/9, const = -32, accuracy = 1, names = c("°F", "°C"), source = "Air Temperature")
+    t2 <- check_conversion(df1$`Ta_h (°C)`, df1$`Ta_h (°F)`, mult = 5/9, const = -32, accuracy = 1, names = c("°F", "°C"), source = "Ta_h")
+    t3 <- check_conversion(df1$`Ta_m (°C)`, df1$`Ta_m (°F)`, mult = 5/9, const = -32, accuracy = 1, names = c("°F", "°C"), source = "Ta_m")
+    t4 <- check_conversion(df1$`Ta_l (°C)`, df1$`Ta_l (°F)`, mult = 5/9, const = -32, accuracy = 1, names = c("°F", "°C"), source = "Ta_l")
+    t5 <- check_conversion(df1$`Operative temperature (°C)`, df1$`Operative temperature (°F)`, mult = 5/9, const = -32, accuracy = 1, names = c("°F", "°C"), source = "Operative Temperature")
+    t6 <- check_conversion(df1$`Radiant temperature (°C)`, df1$`Radiant temperature (°F)`, mult = 5/9, const = -32, accuracy = 1, names = c("°F", "°C"), source = "Radiant Temperature")
+    t7 <- check_conversion(df1$`Globe temperature (°C)`, df1$`Globe temperature (°F)`, mult = 5/9, const = -32, accuracy = 1, names = c("°F", "°C"), source = "Globe Temperature")
+    t8 <- check_conversion(df1$`Tg_h (°C)`, df1$`Tg_h (°F)`, mult = 5/9, const = -32, accuracy = 1, names = c("°F", "°C"), source = "Tg_h")
+    t9 <- check_conversion(df1$`Tg_m (°C)`, df1$`Tg_m (°F)`, mult = 5/9, const = -32, accuracy = 1, names = c("°F", "°C"), source = "Tg_m")
+    t10 <- check_conversion(df1$`Tg_l (°C)`, df1$`Tg_l (°F)`, mult = 5/9, const = -32, accuracy = 1, names = c("°F", "°C"), source = "Tg_l")
+    t11 <- check_conversion(df1$`Outside monthly air temperature (°C)`, df1$`Outside monthly air temperature (°F)`, mult = 5/9, const = -32, accuracy = 1, names = c("°F", "°C"), source = "Outside Monthly Air Temperature")
+    
+    #create a list of potentially wrong conversions
+    tables <- list(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11)
+    #if element is a dataframe, then there exists wrong conversions
+    wrong <- which(unlist(lapply(tables, is.data.frame)))
+    
+    
+    if(length(wrong) > 0){
+      frame <- tables[[wrong[1]]]
+    }
+    
+    #combine all data frames
+    if(length(wrong) > 1){
+      for (elem in wrong[-1]){
+        frame <- rbind(frame, tables[[elem]])
+        
+      }
+    }
+    
+    if(length(wrong) == 0){
+      message <- data.frame(c("All temperature conversions passing."))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(frame)
+    }
+        
+    
+  })
+  
+  output$velocity_conv <- renderTable({
+    
+    df1 <- read.csv(input$file1$datapath, sep = ",",
+                    header = TRUE, stringsAsFactors = FALSE, check.names = F)
+    
+    #list all wrong velocity conversions
+    t1 <- check_conversion(df1$`Air velocity (fpm)`, df1$`Air velocity (m/s)`, mult = 196.85, accuracy = 2, names = c("m/s", "fpm"), source = "Air Velocity")
+    t2 <- check_conversion(df1$`Velocity_h (fpm)`, df1$`Velocity_h (m/s)`, mult = 196.85, accuracy = 2, names = c("m/s", "fpm"), source = "Velocity_h")
+    #create a list of potentially wrong conversions
+    tables <- list(t1, t2)
+    #if element is a dataframe, then there exists wrong conversions
+    wrong <- which(unlist(lapply(tables, is.data.frame)))
+    
+    if(length(wrong) > 0){
+    frame <- tables[[wrong[1]]]
+    }
+    
+    #combine all data frames
+    if(length(wrong) > 1){
+      for (elem in wrong[-1]){
+        frame <- rbind(frame, tables[[elem]])
+        
+      }
+    }
+    
+    if(length(wrong) == 0){
+      message <- data.frame(c("All velocity conversions passing."))
+      names(message) <- c("")
+      return(message)
+    }else{
+      return(frame)
+    }
+    
+    
   })
   
 }
