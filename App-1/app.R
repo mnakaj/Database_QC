@@ -57,8 +57,11 @@ ui <- fluidPage(
       
       em("Note:"),
       p("If there is any trouble with symbols not being found, (ie. °C or % etc), please save csv file with UTF-8 encoding. This can 
-        easily be done in Excel by going to File --> Save As --> File Format --> CSV UTF-8.")
+        easily be done in Excel by going to File --> Save As --> File Format --> CSV UTF-8."),
       
+      tags$hr(),
+      
+      downloadButton("downloadCountries", "CountryCodes.csv")
       
     ),
     
@@ -358,6 +361,15 @@ server <- function(input, output) {
     
     content <- function(file){
       file.copy("./Data/submission_template.csv", file)
+    }
+  )
+  
+  output$downloadCountries <- downloadHandler(
+    
+    filename <- "CountryCodes.csv",
+    
+    content <- function(file){
+      file.copy("./Data/CountryCodes.csv", file)
     }
   )
   
