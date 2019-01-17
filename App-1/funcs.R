@@ -731,7 +731,8 @@ check_temp_R <- function(temperatures, min, max, name){
   
   temperatures1 <- as.character(temperatures)
   index_alpha <- c()
-  temp_grep <- grepl("[^0-9\\.]", temperatures1)
+  temp_grep <- grepl("[^0-9\\.\\-]", temperatures1)
+  
   if (length(which(temp_grep)) > 0){
     index_alpha <- which(temp_grep)
     
@@ -950,8 +951,6 @@ check_conversion <- function(col1, col2, mult, const = 0, accuracy, names = c("c
   
   
 }
-
-
 ### Helper Functions
 
 na_message <- function(name){
